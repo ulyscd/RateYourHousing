@@ -5,6 +5,9 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import multer from 'multer'
 import fs from 'fs'
+import dotenv from 'dotenv'
+
+dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -100,6 +103,45 @@ db.serialize(() => {
       FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE
     )
   `)
+
+  // Review votes/helpful table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS review_votes (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      review_id INTEGER NOT NULL,
+      user_identifier TEXT NOT NULL,
+      vote_type TEXT NOT NULL CHECK(vote_type IN ('helpful', 'not_helpful')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(review_id, user_identifier),
+      FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Management responses table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS management_responses (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      review_id INTEGER NOT NULL UNIQUE,
+      listing_id INTEGER NOT NULL,
+      manager_name TEXT NOT NULL,
+      response_text TEXT NOT NULL,
+      is_verified BOOLEAN DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE,
+      FOREIGN KEY (listing_id) REFERENCES listings(id) ON DELETE CASCADE
+    )
+  `)
+
+  // Add new columns to reviews table if they don't exist
+  db.run(`ALTER TABLE reviews ADD COLUMN bedrooms INTEGER`, () => {})
+  db.run(`ALTER TABLE reviews ADD COLUMN bathrooms REAL`, () => {})
+  db.run(`ALTER TABLE reviews ADD COLUMN rent_price REAL`, () => {})
+  db.run(`ALTER TABLE reviews ADD COLUMN helpful_count INTEGER DEFAULT 0`, () => {})
+  db.run(`ALTER TABLE reviews ADD COLUMN not_helpful_count INTEGER DEFAULT 0`, () => {})
+  
+  // Add AI summary column to listings table
+  db.run(`ALTER TABLE listings ADD COLUMN ai_summary TEXT`, () => {})
+  db.run(`ALTER TABLE listings ADD COLUMN ai_summary_generated_at DATETIME`, () => {})
 })
 
 // Create uploads directory if it doesn't exist
@@ -209,15 +251,19 @@ app.post('/api/listings', (req, res) => {
 // Get reviews for a listing
 app.get('/api/reviews/listing/:listingId', (req, res) => {
   const { listingId } = req.params
+  const userIdentifier = req.query.user_identifier || null
+  
   db.all(
     `SELECT r.*, u.name as user_name, rt.rating, 
             (SELECT GROUP_CONCAT(url) FROM images WHERE review_id = r.id) as image_urls,
-            (SELECT GROUP_CONCAT(trait) FROM review_traits WHERE review_id = r.id) as traits
+            (SELECT GROUP_CONCAT(trait) FROM review_traits WHERE review_id = r.id) as traits,
+            mr.manager_name, mr.response_text as management_response, mr.is_verified as management_verified, mr.created_at as management_response_date
      FROM reviews r
      JOIN users u ON r.user_id = u.id
      JOIN ratings rt ON rt.review_id = r.id
+     LEFT JOIN management_responses mr ON mr.review_id = r.id
      WHERE r.listing_id = ?
-     ORDER BY r.created_at DESC`,
+     ORDER BY r.helpful_count DESC, r.created_at DESC`,
     [listingId],
     (err, rows) => {
       if (err) {
@@ -233,9 +279,21 @@ app.get('/api/reviews/listing/:listingId', (req, res) => {
           user_name: row.user_name,
           text: row.text,
           rating: row.rating,
+          bedrooms: row.bedrooms,
+          bathrooms: row.bathrooms,
+          rent_price: row.rent_price,
+          helpful_count: row.helpful_count || 0,
+          not_helpful_count: row.not_helpful_count || 0,
           created_at: row.created_at,
           images: [],
-          traits: []
+          traits: [],
+          user_vote: null,
+          management_response: row.management_response ? {
+            manager_name: row.manager_name,
+            text: row.management_response,
+            is_verified: row.management_verified === 1,
+            created_at: row.management_response_date
+          } : null
         }
         
         if (row.image_urls) {
@@ -251,14 +309,39 @@ app.get('/api/reviews/listing/:listingId', (req, res) => {
         return review
       })
       
-      res.json(reviews)
+      // If user_identifier provided, fetch their votes
+      if (userIdentifier) {
+        const reviewIds = reviews.map(r => r.id)
+        if (reviewIds.length > 0) {
+          db.all(
+            `SELECT review_id, vote_type FROM review_votes 
+             WHERE user_identifier = ? AND review_id IN (${reviewIds.map(() => '?').join(',')})`,
+            [userIdentifier, ...reviewIds],
+            (err, votes) => {
+              if (!err && votes) {
+                votes.forEach(vote => {
+                  const review = reviews.find(r => r.id === vote.review_id)
+                  if (review) {
+                    review.user_vote = vote.vote_type
+                  }
+                })
+              }
+              res.json(reviews)
+            }
+          )
+        } else {
+          res.json(reviews)
+        }
+      } else {
+        res.json(reviews)
+      }
     }
   )
 })
 
 // Submit a review
 app.post('/api/reviews', upload.array('images', 10), (req, res) => {
-  const { listing_id, user_name, rating, text, traits } = req.body
+  const { listing_id, user_name, rating, text, traits, bedrooms, bathrooms, rent_price } = req.body
   const files = req.files || []
   
   // Parse traits if it's a JSON string
@@ -312,10 +395,15 @@ app.post('/api/reviews', upload.array('images', 10), (req, res) => {
         createReview()
 
         function createReview() {
-          // Create review
+          // Create review with optional fields
+          const bedroomsValue = bedrooms ? parseInt(bedrooms) : null
+          const bathroomsValue = bathrooms ? parseFloat(bathrooms) : null
+          const rentPriceValue = rent_price ? parseFloat(rent_price) : null
+          
           db.run(
-            `INSERT INTO reviews (listing_id, user_id, text) VALUES (?, ?, ?)`,
-            [listing_id, userId, text],
+            `INSERT INTO reviews (listing_id, user_id, text, bedrooms, bathrooms, rent_price) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [listing_id, userId, text, bedroomsValue, bathroomsValue, rentPriceValue],
             function(err) {
               if (err) {
                 db.run('ROLLBACK')
@@ -479,6 +567,420 @@ app.delete('/api/reviews/:id', (req, res) => {
       )
     }
   )
+})
+
+// Vote on review (helpful/not helpful)
+app.post('/api/reviews/:id/vote', (req, res) => {
+  const { id } = req.params
+  const { vote_type, user_identifier } = req.body
+
+  if (!vote_type || !user_identifier) {
+    return res.status(400).json({ error: 'vote_type and user_identifier are required' })
+  }
+
+  if (vote_type !== 'helpful' && vote_type !== 'not_helpful') {
+    return res.status(400).json({ error: 'vote_type must be either "helpful" or "not_helpful"' })
+  }
+
+  // Check if user has already voted
+  db.get(
+    `SELECT * FROM review_votes WHERE review_id = ? AND user_identifier = ?`,
+    [id, user_identifier],
+    (err, existingVote) => {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+
+      if (existingVote) {
+        // Update existing vote
+        db.run(
+          `UPDATE review_votes SET vote_type = ? WHERE review_id = ? AND user_identifier = ?`,
+          [vote_type, id, user_identifier],
+          (err) => {
+            if (err) {
+              return res.status(500).json({ error: err.message })
+            }
+            updateReviewVoteCounts(id, res)
+          }
+        )
+      } else {
+        // Insert new vote
+        db.run(
+          `INSERT INTO review_votes (review_id, user_identifier, vote_type) VALUES (?, ?, ?)`,
+          [id, user_identifier, vote_type],
+          (err) => {
+            if (err) {
+              return res.status(500).json({ error: err.message })
+            }
+            updateReviewVoteCounts(id, res)
+          }
+        )
+      }
+    }
+  )
+})
+
+// Remove vote from review
+app.delete('/api/reviews/:id/vote', (req, res) => {
+  const { id } = req.params
+  const { user_identifier } = req.body
+
+  if (!user_identifier) {
+    return res.status(400).json({ error: 'user_identifier is required' })
+  }
+
+  db.run(
+    `DELETE FROM review_votes WHERE review_id = ? AND user_identifier = ?`,
+    [id, user_identifier],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+      updateReviewVoteCounts(id, res)
+    }
+  )
+})
+
+// Helper function to update review vote counts
+const updateReviewVoteCounts = (reviewId, res) => {
+  db.get(
+    `SELECT 
+      SUM(CASE WHEN vote_type = 'helpful' THEN 1 ELSE 0 END) as helpful_count,
+      SUM(CASE WHEN vote_type = 'not_helpful' THEN 1 ELSE 0 END) as not_helpful_count
+     FROM review_votes 
+     WHERE review_id = ?`,
+    [reviewId],
+    (err, counts) => {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+
+      db.run(
+        `UPDATE reviews SET helpful_count = ?, not_helpful_count = ? WHERE id = ?`,
+        [counts.helpful_count || 0, counts.not_helpful_count || 0, reviewId],
+        (err) => {
+          if (err) {
+            return res.status(500).json({ error: err.message })
+          }
+
+          res.json({
+            success: true,
+            helpful_count: counts.helpful_count || 0,
+            not_helpful_count: counts.not_helpful_count || 0
+          })
+        }
+      )
+    }
+  )
+}
+
+// Submit management response to review
+app.post('/api/reviews/:id/management-response', (req, res) => {
+  const { id } = req.params
+  const { manager_name, response_text, listing_id } = req.body
+
+  if (!manager_name || !response_text || !listing_id) {
+    return res.status(400).json({ error: 'manager_name, response_text, and listing_id are required' })
+  }
+
+  // Check if response already exists
+  db.get(
+    `SELECT * FROM management_responses WHERE review_id = ?`,
+    [id],
+    (err, existing) => {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+
+      if (existing) {
+        // Update existing response
+        db.run(
+          `UPDATE management_responses SET manager_name = ?, response_text = ? WHERE review_id = ?`,
+          [manager_name, response_text, id],
+          (err) => {
+            if (err) {
+              return res.status(500).json({ error: err.message })
+            }
+            res.json({ success: true, message: 'Management response updated' })
+          }
+        )
+      } else {
+        // Insert new response
+        db.run(
+          `INSERT INTO management_responses (review_id, listing_id, manager_name, response_text) 
+           VALUES (?, ?, ?, ?)`,
+          [id, listing_id, manager_name, response_text],
+          (err) => {
+            if (err) {
+              return res.status(500).json({ error: err.message })
+            }
+            res.json({ success: true, message: 'Management response added' })
+          }
+        )
+      }
+    }
+  )
+})
+
+// Generate AI summary for a listing
+app.post('/api/listings/:id/generate-summary', async (req, res) => {
+  const { id } = req.params
+  
+  try {
+    // Fetch all reviews for this listing
+    const reviews = await new Promise((resolve, reject) => {
+      db.all(
+        `SELECT r.text, r.bedrooms, r.bathrooms, r.rent_price, rt.rating,
+                (SELECT GROUP_CONCAT(trait) FROM review_traits WHERE review_id = r.id) as traits
+         FROM reviews r
+         JOIN ratings rt ON rt.review_id = r.id
+         WHERE r.listing_id = ?`,
+        [id],
+        (err, rows) => {
+          if (err) reject(err)
+          else resolve(rows)
+        }
+      )
+    })
+
+    if (reviews.length === 0) {
+      return res.status(400).json({ error: 'No reviews available to generate summary' })
+    }
+
+    // Get listing info
+    const listing = await new Promise((resolve, reject) => {
+      db.get(`SELECT name FROM listings WHERE id = ?`, [id], (err, row) => {
+        if (err) reject(err)
+        else resolve(row)
+      })
+    })
+
+    // Prepare review data for AI
+    const reviewTexts = reviews.map((r, i) => {
+      let review = `Review ${i + 1} (${r.rating}/5 stars): ${r.text}`
+      if (r.bedrooms) review += ` | ${r.bedrooms} bed`
+      if (r.bathrooms) review += `, ${r.bathrooms} bath`
+      if (r.rent_price) review += `, $${r.rent_price}/mo`
+      if (r.traits) review += ` | Traits: ${r.traits}`
+      return review
+    }).join('\n\n')
+
+    // Call OpenRouter API
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:5001',
+        'X-Title': 'Rate Your Housing'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant that summarizes apartment reviews. Be concise, balanced, and focus on the most important points. Format your response as JSON with these fields: "summary" (2-3 sentences), "pros" (array of 3-5 strings), "cons" (array of 3-5 strings), "keywords" (array of 3 descriptive words).'
+          },
+          {
+            role: 'user',
+            content: `Summarize these reviews for ${listing.name}:\n\n${reviewTexts}\n\nProvide a balanced summary highlighting key pros and cons.`
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      })
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error('OpenRouter API error:', error)
+      return res.status(500).json({ error: 'Failed to generate summary' })
+    }
+
+    const data = await response.json()
+    const aiResponse = data.choices[0].message.content
+
+    // Try to parse as JSON, fallback to text if needed
+    let summary
+    try {
+      summary = JSON.parse(aiResponse)
+    } catch (e) {
+      // If not JSON, create structured response from text
+      summary = {
+        summary: aiResponse,
+        pros: [],
+        cons: [],
+        keywords: []
+      }
+    }
+
+    // Save to database
+    await new Promise((resolve, reject) => {
+      db.run(
+        `UPDATE listings SET ai_summary = ?, ai_summary_generated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+        [JSON.stringify(summary), id],
+        (err) => {
+          if (err) reject(err)
+          else resolve()
+        }
+      )
+    })
+
+    res.json({ success: true, summary })
+  } catch (error) {
+    console.error('Error generating summary:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Get AI summary for a listing
+app.get('/api/listings/:id/summary', (req, res) => {
+  const { id } = req.params
+  
+  db.get(
+    `SELECT ai_summary, ai_summary_generated_at FROM listings WHERE id = ?`,
+    [id],
+    (err, row) => {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+      
+      if (!row || !row.ai_summary) {
+        return res.status(404).json({ error: 'No summary available' })
+      }
+      
+      try {
+        const summary = JSON.parse(row.ai_summary)
+        res.json({
+          summary,
+          generated_at: row.ai_summary_generated_at
+        })
+      } catch (e) {
+        res.status(500).json({ error: 'Failed to parse summary' })
+      }
+    }
+  )
+})
+
+// Smart Match - AI-powered housing search
+app.post('/api/smart-match', async (req, res) => {
+  const { userInput, conversationHistory } = req.body
+
+  try {
+    // Build conversation context
+    const messages = [
+      {
+        role: 'system',
+        content: `You are a helpful housing search assistant. Analyze user requests and extract housing preferences.
+
+Your job is to understand what the user wants and extract specific criteria:
+- Number of bedrooms (minBedrooms, maxBedrooms)
+- Number of bathrooms (minBathrooms, maxBathrooms)
+- Price range (minPrice, maxPrice)
+- Star rating preference (minRating, maxRating)
+- Desired traits/amenities (traits array)
+
+When you have enough information to make a match, respond with JSON in this EXACT format:
+{
+  "hasMatch": true,
+  "filters": {
+    "minBedrooms": "2",
+    "maxBedrooms": "3",
+    "minPrice": "800",
+    "maxPrice": "1500",
+    "minRating": "3",
+    "traits": ["Pet Friendly", "Parking"]
+  },
+  "sortBy": "rating-high",
+  "message": "I found several apartments matching your criteria!"
+}
+
+If you need more information, respond with:
+{
+  "hasMatch": false,
+  "message": "What's your budget range? And do you prefer any specific amenities?"
+}
+
+Common traits to look for: Pet Friendly, Parking, Gym, Pool, Laundry, Dishwasher, AC, Heating, Furnished, Utilities Included, Quiet, Safe Area, Close to Campus, Public Transit, Elevator, Balcony
+
+Be conversational and helpful. Extract all criteria you can from the user's message.`
+      }
+    ]
+
+    // Add conversation history
+    if (conversationHistory && conversationHistory.length > 0) {
+      conversationHistory.forEach(msg => {
+        messages.push({
+          role: msg.role,
+          content: msg.content
+        })
+      })
+    } else {
+      messages.push({
+        role: 'user',
+        content: userInput
+      })
+    }
+
+    // Call OpenRouter API
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'http://localhost:5001',
+        'X-Title': 'Rate Your Housing - Smart Match'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-3.5-turbo',
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 300
+      })
+    })
+
+    if (!response.ok) {
+      const error = await response.text()
+      console.error('OpenRouter API error:', error)
+      return res.status(500).json({ 
+        message: "I'm having trouble processing that. Could you try rephrasing?"
+      })
+    }
+
+    const data = await response.json()
+    const aiResponse = data.choices[0].message.content
+
+    // Try to parse as JSON
+    let result
+    try {
+      result = JSON.parse(aiResponse)
+    } catch (e) {
+      // If not JSON, treat as a message
+      result = {
+        hasMatch: false,
+        message: aiResponse
+      }
+    }
+
+    // Return the result
+    if (result.hasMatch && result.filters) {
+      res.json({
+        filters: result.filters,
+        sortBy: result.sortBy || 'rating-high',
+        message: result.message
+      })
+    } else {
+      res.json({
+        message: result.message || "Tell me more about what you're looking for!"
+      })
+    }
+
+  } catch (error) {
+    console.error('Smart match error:', error)
+    res.status(500).json({ 
+      message: "Sorry, I encountered an error. Please try again."
+    })
+  }
 })
 
 // Start server

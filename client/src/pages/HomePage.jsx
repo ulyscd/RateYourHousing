@@ -5,11 +5,14 @@ import MapComponent from '../components/MapComponent'
 import ListingsSidebar from '../components/ListingsSidebar'
 import SearchBar from '../components/SearchBar'
 import AddHousingModal from '../components/AddHousingModal'
-import { getListings } from '../services/api'
+import FilterModal from '../components/FilterModal'
+import SmartMatchAgent from '../components/SmartMatchAgent'
+import { getListings, getReviews } from '../services/api'
 
 function HomePage() {
   const [listings, setListings] = useState([])
   const [filteredListings, setFilteredListings] = useState([])
+  const [sortedListings, setSortedListings] = useState([])
   const [clickedListing, setClickedListing] = useState(null)
   const [hoveredListing, setHoveredListing] = useState(null)
   const [highlightedListing, setHighlightedListing] = useState(null)
@@ -17,6 +20,21 @@ function HomePage() {
   const [showCreateReview, setShowCreateReview] = useState(false)
   const [selectedListingForReview, setSelectedListingForReview] = useState('')
   const [selectedLocation, setSelectedLocation] = useState(null)
+  const [showFilterModal, setShowFilterModal] = useState(false)
+  const [showSmartMatch, setShowSmartMatch] = useState(false)
+  const [sortBy, setSortBy] = useState('name')
+  const [listingsWithMeta, setListingsWithMeta] = useState({})
+  const [filters, setFilters] = useState({
+    minRating: '',
+    maxRating: '',
+    minBedrooms: '',
+    maxBedrooms: '',
+    minBathrooms: '',
+    maxBathrooms: '',
+    minPrice: '',
+    maxPrice: '',
+    traits: []
+  })
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -24,24 +42,171 @@ function HomePage() {
   }, [])
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredListings(listings)
-    } else {
-      const filtered = listings.filter(listing =>
-        listing.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      setFilteredListings(filtered)
-    }
-  }, [searchQuery, listings])
+    applyFilters()
+  }, [searchQuery, listings, filters])
+
+  useEffect(() => {
+    applySorting()
+  }, [filteredListings, sortBy, listingsWithMeta])
 
   const loadListings = async () => {
     try {
       const data = await getListings()
       setListings(data)
       setFilteredListings(data)
+      
+      // Load metadata for sorting (review counts, avg prices, etc.)
+      const meta = {}
+      for (const listing of data) {
+        try {
+          const reviews = await getReviews(listing.id)
+          meta[listing.id] = {
+            reviewCount: reviews.length,
+            avgPrice: reviews.reduce((sum, r) => sum + (r.rent_price || 0), 0) / (reviews.filter(r => r.rent_price).length || 1),
+            latestReview: reviews.length > 0 ? new Date(reviews[0].created_at) : null
+          }
+        } catch (error) {
+          meta[listing.id] = { reviewCount: 0, avgPrice: 0, latestReview: null }
+        }
+      }
+      setListingsWithMeta(meta)
     } catch (error) {
       console.error('Error loading listings:', error)
     }
+  }
+
+  const applySorting = () => {
+    let sorted = [...filteredListings]
+    
+    switch (sortBy) {
+      case 'rating-high':
+        sorted.sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0))
+        break
+      case 'rating-low':
+        sorted.sort((a, b) => (a.average_rating || 0) - (b.average_rating || 0))
+        break
+      case 'price-low':
+        sorted.sort((a, b) => {
+          const priceA = listingsWithMeta[a.id]?.avgPrice || 0
+          const priceB = listingsWithMeta[b.id]?.avgPrice || 0
+          return priceA - priceB
+        })
+        break
+      case 'price-high':
+        sorted.sort((a, b) => {
+          const priceA = listingsWithMeta[a.id]?.avgPrice || 0
+          const priceB = listingsWithMeta[b.id]?.avgPrice || 0
+          return priceB - priceA
+        })
+        break
+      case 'most-reviewed':
+        sorted.sort((a, b) => {
+          const countA = listingsWithMeta[a.id]?.reviewCount || 0
+          const countB = listingsWithMeta[b.id]?.reviewCount || 0
+          return countB - countA
+        })
+        break
+      case 'newest':
+        sorted.sort((a, b) => {
+          const dateA = listingsWithMeta[a.id]?.latestReview || new Date(0)
+          const dateB = listingsWithMeta[b.id]?.latestReview || new Date(0)
+          return dateB - dateA
+        })
+        break
+      case 'name':
+      default:
+        sorted.sort((a, b) => a.name.localeCompare(b.name))
+        break
+    }
+    
+    setSortedListings(sorted)
+  }
+
+  const applyFilters = async () => {
+    let filtered = [...listings]
+
+    // Apply search query
+    if (searchQuery.trim() !== '') {
+      filtered = filtered.filter(listing =>
+        listing.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+
+    // Apply rating filter
+    if (filters.minRating || filters.maxRating) {
+      filtered = filtered.filter(listing => {
+        const rating = listing.average_rating || 0
+        const min = filters.minRating ? parseFloat(filters.minRating) : 0
+        const max = filters.maxRating ? parseFloat(filters.maxRating) : 5
+        return rating >= min && rating <= max
+      })
+    }
+
+    // For bedroom/bathroom/price/traits filters, we need to fetch reviews
+    const needsReviewData = filters.minBedrooms || filters.maxBedrooms || 
+                           filters.minBathrooms || filters.maxBathrooms ||
+                           filters.minPrice || filters.maxPrice ||
+                           filters.traits.length > 0
+
+    if (needsReviewData) {
+      // Fetch reviews for each listing and filter based on them
+      const filteredByReviews = await Promise.all(
+        filtered.map(async (listing) => {
+          try {
+            const reviews = await getReviews(listing.id)
+            
+            // Check if any review matches the criteria
+            const hasMatchingReview = reviews.some(review => {
+              // Bedroom filter
+              if (filters.minBedrooms && (!review.bedrooms || review.bedrooms < parseInt(filters.minBedrooms))) {
+                return false
+              }
+              if (filters.maxBedrooms && (!review.bedrooms || review.bedrooms > parseInt(filters.maxBedrooms))) {
+                return false
+              }
+
+              // Bathroom filter
+              if (filters.minBathrooms && (!review.bathrooms || review.bathrooms < parseFloat(filters.minBathrooms))) {
+                return false
+              }
+              if (filters.maxBathrooms && (!review.bathrooms || review.bathrooms > parseFloat(filters.maxBathrooms))) {
+                return false
+              }
+
+              // Price filter
+              if (filters.minPrice && (!review.rent_price || review.rent_price < parseFloat(filters.minPrice))) {
+                return false
+              }
+              if (filters.maxPrice && (!review.rent_price || review.rent_price > parseFloat(filters.maxPrice))) {
+                return false
+              }
+
+              // Traits filter - check if review has ALL selected traits
+              if (filters.traits.length > 0) {
+                const reviewTraits = review.traits || []
+                const hasAllTraits = filters.traits.every(trait =>
+                  reviewTraits.some(rt => rt.toLowerCase().includes(trait.toLowerCase()))
+                )
+                if (!hasAllTraits) {
+                  return false
+                }
+              }
+
+              return true
+            })
+
+            return hasMatchingReview ? listing : null
+          } catch (error) {
+            console.error(`Error fetching reviews for listing ${listing.id}:`, error)
+            return null
+          }
+        })
+      )
+
+      filtered = filteredByReviews.filter(listing => listing !== null)
+    }
+
+    setFilteredListings(filtered)
   }
 
   const handleListingClick = (listing) => {
@@ -90,6 +255,37 @@ function HomePage() {
   const handleModalSubmit = async (newListing) => {
     await loadListings() // Reload listings to show the new one
   }
+
+  const handleApplyFilters = (newFilters) => {
+    setFilters(newFilters)
+  }
+
+  const handleSmartMatchApply = (matchFilters, matchSortBy) => {
+    // Apply the filters extracted by the AI
+    if (matchFilters) {
+      setFilters(matchFilters)
+    }
+    // Apply the sort option if provided
+    if (matchSortBy) {
+      setSortBy(matchSortBy)
+    }
+    // Close the Smart Match modal
+    setShowSmartMatch(false)
+  }
+
+  const countActiveFilters = () => {
+    let count = 0
+    if (filters.minRating) count++
+    if (filters.maxRating) count++
+    if (filters.minBedrooms) count++
+    if (filters.maxBedrooms) count++
+    if (filters.minBathrooms) count++
+    if (filters.maxBathrooms) count++
+    if (filters.minPrice) count++
+    if (filters.maxPrice) count++
+    count += filters.traits.length
+    return count
+  }
   
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -124,8 +320,8 @@ function HomePage() {
                 Made with AI assistance
               </p>
             </div>
-            {/* Search Bar and Create Review Button */}
-            <div className="flex items-start gap-4">
+            {/* Create Review Button and Search Bar */}
+            <div className="flex items-end gap-4">
               {/* Create Review Button */}
               <div className="relative pointer-events-auto create-review-dropdown">
                 <button
@@ -162,6 +358,7 @@ function HomePage() {
                   </div>
                 )}
               </div>
+              
               {/* Search Bar */}
               <div className="max-w-md">
                 <SearchBar onLocationSelect={handleLocationSelect} />
@@ -178,7 +375,7 @@ function HomePage() {
           <div className="h-full w-full bg-eggshell-100 rounded-3xl border-2 border-eggshell-400 shadow-lg overflow-hidden relative">
             <div className="absolute inset-0 z-0">
               <MapComponent
-                listings={filteredListings}
+                listings={sortedListings.length > 0 ? sortedListings : filteredListings}
                 onMarkerClick={handleMarkerClick}
                 onMarkerHover={handleMarkerHover}
                 hoveredListing={hoveredListing}
@@ -190,7 +387,7 @@ function HomePage() {
         
         {/* Sidebar */}
         <ListingsSidebar
-          listings={filteredListings}
+          listings={sortedListings.length > 0 ? sortedListings : filteredListings}
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
           onListingClick={handleListingClick}
@@ -198,6 +395,11 @@ function HomePage() {
           hoveredListing={hoveredListing}
           clickedListing={clickedListing}
           highlightedListing={highlightedListing}
+          onFilterClick={() => setShowFilterModal(true)}
+          activeFiltersCount={countActiveFilters()}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onSmartMatchClick={() => setShowSmartMatch(true)}
         />
       </div>
 
@@ -207,6 +409,22 @@ function HomePage() {
           location={selectedLocation}
           onClose={handleModalClose}
           onSubmit={handleModalSubmit}
+        />
+      )}
+
+      {/* Filter Modal */}
+      <FilterModal
+        isOpen={showFilterModal}
+        onClose={() => setShowFilterModal(false)}
+        onApplyFilters={handleApplyFilters}
+        initialFilters={filters}
+      />
+
+      {/* Smart Match Agent Modal */}
+      {showSmartMatch && (
+        <SmartMatchAgent
+          onClose={() => setShowSmartMatch(false)}
+          onApplyMatch={handleSmartMatchApply}
         />
       )}
     </div>

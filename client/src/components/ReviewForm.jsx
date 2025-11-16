@@ -10,6 +10,9 @@ function ReviewForm({ listingId, onSubmit }) {
   const [images, setImages] = useState([])
   const [userName, setUserName] = useState('')
   const [selectedTraits, setSelectedTraits] = useState([])
+  const [bedrooms, setBedrooms] = useState('')
+  const [bathrooms, setBathrooms] = useState('')
+  const [rentPrice, setRentPrice] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   const handleStarClick = (value) => {
@@ -57,6 +60,11 @@ function ReviewForm({ listingId, onSubmit }) {
       formData.append('rating', rating)
       formData.append('text', text)
       formData.append('traits', JSON.stringify(selectedTraits))
+      
+      // Add optional fields only if they have values
+      if (bedrooms) formData.append('bedrooms', bedrooms)
+      if (bathrooms) formData.append('bathrooms', bathrooms)
+      if (rentPrice) formData.append('rent_price', rentPrice)
 
       images.forEach((img, index) => {
         formData.append('images', img.file)
@@ -71,6 +79,9 @@ function ReviewForm({ listingId, onSubmit }) {
       setImages([])
       setUserName('')
       setSelectedTraits([])
+      setBedrooms('')
+      setBathrooms('')
+      setRentPrice('')
       
       alert('Review submitted successfully!')
       onSubmit()
@@ -140,6 +151,57 @@ function ReviewForm({ listingId, onSubmit }) {
           placeholder="Share your experience..."
           required
         />
+      </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-bold text-charcoal-800 mb-3">
+            Bedrooms
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="10"
+            value={bedrooms}
+            onChange={(e) => setBedrooms(e.target.value)}
+            className="w-full px-5 py-3 bg-eggshell-50 rounded-xl border border-eggshell-400 focus:outline-none focus:ring-2 focus:ring-matcha-400 focus:border-matcha-400 transition-all duration-200 placeholder:text-charcoal-400 text-charcoal-900 font-medium shadow-sm"
+            placeholder="e.g. 2"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-charcoal-800 mb-3">
+            Bathrooms
+          </label>
+          <input
+            type="number"
+            min="0"
+            max="10"
+            step="0.5"
+            value={bathrooms}
+            onChange={(e) => setBathrooms(e.target.value)}
+            className="w-full px-5 py-3 bg-eggshell-50 rounded-xl border border-eggshell-400 focus:outline-none focus:ring-2 focus:ring-matcha-400 focus:border-matcha-400 transition-all duration-200 placeholder:text-charcoal-400 text-charcoal-900 font-medium shadow-sm"
+            placeholder="e.g. 1.5"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-charcoal-800 mb-3">
+            Rent/Month
+          </label>
+          <div className="relative">
+            <span className="absolute left-5 top-1/2 transform -translate-y-1/2 text-charcoal-600 font-bold">$</span>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={rentPrice}
+              onChange={(e) => setRentPrice(e.target.value)}
+              className="w-full pl-9 pr-5 py-3 bg-eggshell-50 rounded-xl border border-eggshell-400 focus:outline-none focus:ring-2 focus:ring-matcha-400 focus:border-matcha-400 transition-all duration-200 placeholder:text-charcoal-400 text-charcoal-900 font-medium shadow-sm"
+              placeholder="1200"
+            />
+          </div>
+        </div>
       </div>
 
       <div>

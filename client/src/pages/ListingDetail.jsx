@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { FiArrowLeft, FiStar } from 'react-icons/fi'
 import ReviewForm from '../components/ReviewForm'
 import ReviewList from '../components/ReviewList'
+import AISummary from '../components/AISummary'
 import { getListing, getReviews } from '../services/api'
 
 function ListingDetail() {
@@ -143,9 +144,16 @@ function ListingDetail() {
             </div>
 
             {listing.description && (
-              <div className="card p-5 rounded-2xl">
+              <div className="card p-5 rounded-2xl mb-6">
                 <h3 className="text-xs font-bold text-matcha-600 uppercase mb-3 tracking-wide">Description</h3>
                 <p className="text-charcoal-700 leading-relaxed">{listing.description}</p>
+              </div>
+            )}
+
+            {/* AI Summary Section */}
+            {reviews.length > 0 && (
+              <div className="mb-6">
+                <AISummary listingId={id} />
               </div>
             )}
           </div>
