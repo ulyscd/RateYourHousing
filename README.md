@@ -1,4 +1,4 @@
-# RateMyHousing
+# RateYourHousing
 
 A web application for rating and reviewing apartments in Eugene, Oregon.
 
@@ -28,15 +28,11 @@ npm run install:all
 
 You can add your listings data by inserting them into the database. You can do this by:
 
-1. Using a SQLite client to insert data directly
-2. Creating a script to import your listings data
-3. Using the SQLite CLI
-
-Example SQL for inserting a listing:
-
-```sql
-INSERT INTO listings (name, address, latitude, longitude, price, bedrooms, bathrooms, description, image_url)
-VALUES ('Apartment Name', '123 Main St, Eugene, OR', 44.0521, -123.0868, '$1200/month', '2', '1', 'Description here', 'https://example.com/image.jpg');
+1. Making sure you have all dependencies (npm run install:all or npm install)
+2. Change directories into the server folder -> cd server
+3. Initialize ypur DB schema -> node setup-db.js
+4. Run the listings.json to populate your DB! -> node import-listings.js
+5. Change directories out by one folder -> cd ..
 ```
 
 ### 3. Run the Application
