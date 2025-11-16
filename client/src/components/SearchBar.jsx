@@ -41,6 +41,9 @@ export default function SearchBar({ onLocationSelect }) {
 
   return (
     <div className="search-bar-container">
+      <p className="text-xs text-charcoal-600 mb-2 italic">
+        Don't see your place? Search and create a new entry.
+      </p>
       <div className="search-input-wrapper">
         <input
           type="text"

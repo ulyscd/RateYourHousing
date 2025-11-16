@@ -32,7 +32,7 @@ function ListingsSidebar({ listings, searchQuery, onSearchChange, onListingClick
     <div className="w-96 bg-eggshell-100 flex flex-col h-full overflow-hidden shadow-lg animate-fade-in border-l border-eggshell-400">
       <div className="p-6 border-b border-eggshell-400 flex-shrink-0">
         <h1 className="text-3xl font-extrabold text-charcoal-900 mb-2 tracking-tight">
-          RateMyHousing
+          Rate Your Housing
         </h1>
         <p className="text-xs text-charcoal-600 mb-5 italic">Find your perfect home. Share your experience.</p>
         <div className="relative">

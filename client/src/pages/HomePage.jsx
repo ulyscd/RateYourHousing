@@ -110,7 +110,7 @@ function HomePage() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-[300px]">
               <div className="flex items-center gap-4 mb-2">
-                <h1 className="text-3xl font-extrabold text-charcoal-900">
+                <h1 className="text-4xl font-extrabold text-matcha-600">
                   Rate Your Housing
                 </h1>
                 <p className="text-lg font-semibold text-charcoal-700">
