@@ -5,7 +5,14 @@
   "main": "server.js",
   "scripts": {
     "dev": "node --watch server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "import-reviews": "node import-reviews.js",
+    "dedupe-listings": "node dedupe-listings.js",
+    "recalc-averages": "node recalc-averages.js",
+  "init-all": "node setup-db.js && node import-listings.js && npm run import-reviews",
+  "fill-coords-from-backup": "node fill-listing-coords-from-backup.js",
+    "merge-dedupe": "node merge-dedupe-listings.js"
+    ,"repair-listing-coords": "node repair-listing-coords.js"
   },
   "dependencies": {
     "express": "^4.18.2",
