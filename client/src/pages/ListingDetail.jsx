@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { FiArrowLeft, FiStar } from 'react-icons/fi'
+import { FiArrowLeft, FiStar, FiImage } from 'react-icons/fi'
 import ReviewForm from '../components/ReviewForm'
 import ReviewList from '../components/ReviewList'
 import AISummary from '../components/AISummary'
+import PhotoGallery from '../components/PhotoGallery'
 import { getListing, getReviews } from '../services/api'
 
 function ListingDetail() {
@@ -14,6 +15,9 @@ function ListingDetail() {
   const [reviews, setReviews] = useState([])
   const [activeTab, setActiveTab] = useState('reviews')
   const [loading, setLoading] = useState(true)
+  const [allImages, setAllImages] = useState([])
+  const [galleryOpen, setGalleryOpen] = useState(false)
+  const [galleryInitialIndex, setGalleryInitialIndex] = useState(0)
 
   useEffect(() => {
     loadListingData()
@@ -30,6 +34,17 @@ function ListingDetail() {
       const reviewsData = await getReviews(id)
       setListing(listingData)
       setReviews(reviewsData)
+      
+      // Collect all images from all reviews
+      const images = []
+      reviewsData.forEach(review => {
+        if (review.images && review.images.length > 0) {
+          review.images.forEach(image => {
+            images.push(image)
+          })
+        }
+      })
+      setAllImages(images)
     } catch (error) {
       console.error('Error loading listing data:', error)
     } finally {
@@ -73,6 +88,11 @@ function ListingDetail() {
         size={22}
       />
     ))
+  }
+
+  const openGallery = (index) => {
+    setGalleryInitialIndex(index)
+    setGalleryOpen(true)
   }
 
   return (
@@ -150,6 +170,34 @@ function ListingDetail() {
               </div>
             )}
 
+            {/* Photo Gallery Section */}
+            {allImages.length > 0 && (
+              <div className="card p-5 rounded-2xl mb-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <FiImage className="text-matcha-600" size={20} />
+                  <h3 className="text-xs font-bold text-matcha-600 uppercase tracking-wide">
+                    Photo Gallery ({allImages.length} {allImages.length === 1 ? 'photo' : 'photos'})
+                  </h3>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {allImages.map((image, index) => (
+                    <div
+                      key={index}
+                      onClick={() => openGallery(index)}
+                      className="relative aspect-square rounded-xl overflow-hidden cursor-pointer group hover:scale-105 transition-transform duration-200 shadow-md hover:shadow-lg border-2 border-eggshell-400 hover:border-matcha-400"
+                    >
+                      <img
+                        src={image.url?.startsWith('http') ? image.url : `${import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5001'}${image.url}`}
+                        alt={`Listing photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* AI Summary Section - show even when there are no reviews so new listings can generate summaries */}
             <div className="mb-6">
               <AISummary listingId={id} />
@@ -193,6 +241,15 @@ function ListingDetail() {
           </div>
         </div>
       </div>
+
+      {/* Photo Gallery Modal */}
+      {galleryOpen && (
+        <PhotoGallery
+          images={allImages}
+          initialIndex={galleryInitialIndex}
+          onClose={() => setGalleryOpen(false)}
+        />
+      )}
     </div>
   )
 }
