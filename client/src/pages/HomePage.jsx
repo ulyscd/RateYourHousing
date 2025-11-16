@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { FiPlus, FiHome } from 'react-icons/fi'
 import MapComponent from '../components/MapComponent'
 import ListingsSidebar from '../components/ListingsSidebar'
+import SearchBar from '../components/SearchBar'
+import AddHousingModal from '../components/AddHousingModal'
 import { getListings } from '../services/api'
 
 function HomePage() {
@@ -13,6 +15,7 @@ function HomePage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateReview, setShowCreateReview] = useState(false)
   const [selectedListingForReview, setSelectedListingForReview] = useState('')
+  const [selectedLocation, setSelectedLocation] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -66,6 +69,18 @@ function HomePage() {
       setSelectedListingForReview('')
     }
   }
+
+  const handleLocationSelect = (location) => {
+    setSelectedLocation(location)
+  }
+
+  const handleModalClose = () => {
+    setSelectedLocation(null)
+  }
+
+  const handleModalSubmit = async (newListing) => {
+    await loadListings() // Reload listings to show the new one
+  }
   
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -96,9 +111,13 @@ function HomePage() {
               <p className="text-sm text-charcoal-600 italic mb-1">
                 Find your perfect home. Share your experience. Help your fellow Ducks! 🦆
               </p>
-              <p className="text-xs text-charcoal-500 italic">
+              <p className="text-xs text-charcoal-500 italic mb-2">
                 Made with AI assistance
               </p>
+              {/* Search Bar */}
+              <div className="max-w-md">
+                <SearchBar onLocationSelect={handleLocationSelect} />
+              </div>
             </div>
             {/* Create Review Button */}
             <div className="relative pointer-events-auto create-review-dropdown">
@@ -167,6 +186,15 @@ function HomePage() {
           clickedListing={clickedListing}
         />
       </div>
+
+      {/* Add Housing Modal */}
+      {selectedLocation && (
+        <AddHousingModal
+          location={selectedLocation}
+          onClose={handleModalClose}
+          onSubmit={handleModalSubmit}
+        />
+      )}
     </div>
   )
 }

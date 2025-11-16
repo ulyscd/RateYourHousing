@@ -163,6 +163,38 @@ app.get('/api/listings/:id', (req, res) => {
   )
 })
 
+// Create a new listing
+app.post('/api/listings', (req, res) => {
+  const { name, address, latitude, longitude, price, bedrooms, bathrooms, description, image_url } = req.body
+
+  if (!name || !address) {
+    return res.status(400).json({ error: 'Name and address are required' })
+  }
+
+  db.run(
+    `INSERT INTO listings (name, address, latitude, longitude, price, bedrooms, bathrooms, description, image_url)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, address, latitude, longitude, price, bedrooms, bathrooms, description, image_url],
+    function(err) {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+      
+      // Return the newly created listing
+      db.get(
+        `SELECT * FROM listings WHERE id = ?`,
+        [this.lastID],
+        (err, row) => {
+          if (err) {
+            return res.status(500).json({ error: err.message })
+          }
+          res.status(201).json(row)
+        }
+      )
+    }
+  )
+})
+
 // Get reviews for a listing
 app.get('/api/reviews/listing/:listingId', (req, res) => {
   const { listingId } = req.params
