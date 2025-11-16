@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+dist/
+build/
+client/dist/
+client/build/
+
+# Environment variables
+.env
+.env.local
+.env.production
+*.env
+client/.env*
+server/.env*
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Database and uploads
+server/database.sqlite
+server/database.sqlite-journal
+server/uploads/*
+!server/uploads/.gitkeep
+
+# IDE files (optional - you may want to commit these)
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
