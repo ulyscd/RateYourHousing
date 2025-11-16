@@ -743,27 +743,41 @@ app.post('/api/listings/:id/generate-summary', async (req, res) => {
       )
     })
 
-    if (reviews.length === 0) {
-      return res.status(400).json({ error: 'No reviews available to generate summary' })
-    }
-
     // Get listing info
     const listing = await new Promise((resolve, reject) => {
-      db.get(`SELECT name FROM listings WHERE id = ?`, [id], (err, row) => {
+      db.get(`SELECT name, description FROM listings WHERE id = ?`, [id], (err, row) => {
         if (err) reject(err)
         else resolve(row)
       })
     })
 
-    // Prepare review data for AI
-    const reviewTexts = reviews.map((r, i) => {
-      let review = `Review ${i + 1} (${r.rating}/5 stars): ${r.text}`
-      if (r.bedrooms) review += ` | ${r.bedrooms} bed`
-      if (r.bathrooms) review += `, ${r.bathrooms} bath`
-      if (r.rent_price) review += `, $${r.rent_price}/mo`
-      if (r.traits) review += ` | Traits: ${r.traits}`
-      return review
-    }).join('\n\n')
+    // If there are no reviews, fall back to using the listing description
+    let reviewTexts
+    if (reviews.length === 0) {
+      console.log(`No reviews found for listing ${id} — falling back to listing description`)
+      // Use listing description text as the single-review input if available
+      if (!listing || !listing.name) {
+        return res.status(400).json({ error: 'No listing information available to generate summary' })
+      }
+      // Build a minimal 'review' using the listing description
+      const descText = listing.description || `Listing ${listing.name} has no description or reviews.`
+      // Create a single pseudo-review so the AI still has context
+      reviewTexts = `Listing description: ${descText}`
+      // Skip the later reviewTexts building below by using this variable
+    }
+
+    // Prepare review data for AI. If we already constructed reviewTexts from listing description
+    // (above fallback for no reviews), reuse it.
+    if (typeof reviewTexts === 'undefined') {
+      reviewTexts = reviews.map((r, i) => {
+        let review = `Review ${i + 1} (${r.rating}/5 stars): ${r.text}`
+        if (r.bedrooms) review += ` | ${r.bedrooms} bed`
+        if (r.bathrooms) review += `, ${r.bathrooms} bath`
+        if (r.rent_price) review += `, $${r.rent_price}/mo`
+        if (r.traits) review += ` | Traits: ${r.traits}`
+        return review
+      }).join('\n\n')
+    }
 
     // Call OpenRouter API
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -798,19 +812,60 @@ app.post('/api/listings/:id/generate-summary', async (req, res) => {
     }
 
     const data = await response.json()
-    const aiResponse = data.choices[0].message.content
+    const aiResponse = data.choices?.[0]?.message?.content || ''
 
-    // Try to parse as JSON, fallback to text if needed
+    // Try to parse as JSON, fall back to extracting JSON substring, then to a structured text fallback.
     let summary
     try {
       summary = JSON.parse(aiResponse)
+      // If the model returned a raw string rather than an object, wrap it
+      if (typeof summary === 'string') {
+        summary = { summary: summary, pros: [], cons: [], keywords: [] }
+      }
     } catch (e) {
-      // If not JSON, create structured response from text
-      summary = {
-        summary: aiResponse,
-        pros: [],
-        cons: [],
-        keywords: []
+      console.warn('AI summary response was not valid top-level JSON. Attempting to extract JSON block...')
+      console.warn('RAW_AI_SUMMARY_RESPONSE:', aiResponse)
+
+      // Attempt to find a JSON object inside the response text
+      const jsonBlockMatch = aiResponse.match(/(\{[\s\S]*\})/)
+      if (jsonBlockMatch) {
+        try {
+          summary = JSON.parse(jsonBlockMatch[1])
+        } catch (e2) {
+          console.warn('Failed to parse extracted JSON block from AI response:', e2.message)
+        }
+      }
+
+      // If still not parsed, build a safe fallback object
+      if (!summary) {
+        // Try to heuristically extract simple lists for pros/cons/keywords
+        const pros = []
+        const cons = []
+        const keywords = []
+
+        // Look for sections like "Pros:" or "Pros\n- ..."
+        const sectionMatch = (name) => {
+          const re = new RegExp(name + "\\s*[:\\n]([\\s\\S]*?)(?:\\n\\n|$)", 'i')
+          const m = aiResponse.match(re)
+          if (!m) return []
+          return m[1].split(/\n|\r|\-|\u2022/).map(s => s.trim()).filter(Boolean)
+        }
+
+        const prosCandidates = sectionMatch('Pros')
+        const consCandidates = sectionMatch('Cons')
+        const keywordsCandidates = sectionMatch('Keywords')
+
+        if (prosCandidates.length) pros.push(...prosCandidates)
+        if (consCandidates.length) cons.push(...consCandidates)
+        if (keywordsCandidates.length) keywords.push(...keywordsCandidates.map(k => k.replace(/[,\.]$/,'')))
+
+        // Final fallback: store the raw text in summary.summary
+        summary = {
+          summary: aiResponse.trim(),
+          pros: pros,
+          cons: cons,
+          keywords: keywords
+        }
       }
     }
 
@@ -955,10 +1010,48 @@ Be conversational and helpful. Extract all criteria you can from the user's mess
     try {
       result = JSON.parse(aiResponse)
     } catch (e) {
-      // If not JSON, treat as a message
+      // If not JSON, attempt a heuristic extraction of filters from the text
+      console.warn('Smart Match AI did not return JSON. RAW_SMART_MATCH_RESPONSE:', aiResponse)
+
+      // Heuristic extraction: bedrooms, price range, simple traits
+      const text = aiResponse.toLowerCase()
+      const heuristics = {}
+
+      // Bedrooms: look for patterns like '1 bed', '2 bedroom', 'two bed'
+      const bedMatch = text.match(/(\d+)\s*(?:bed|bedroom)/)
+      if (bedMatch) heuristics.minBedrooms = heuristics.maxBedrooms = bedMatch[1]
+
+      // Price: look for $800 or 800-1500 or under $1200
+      const priceRangeMatch = text.match(/\$(\d{2,5})\s*[-to]*\s*\$?(\d{2,5})?/)
+      if (priceRangeMatch) {
+        heuristics.minPrice = priceRangeMatch[1]
+        if (priceRangeMatch[2]) heuristics.maxPrice = priceRangeMatch[2]
+      } else {
+        const underMatch = text.match(/under\s*\$?(\d{2,5})/)
+        if (underMatch) heuristics.maxPrice = underMatch[1]
+      }
+
+      // Traits: look for common keywords
+      const commonTraits = ['pet friendly','parking','gym','pool','laundry','dishwasher','ac','heating','furnished','utilities included','quiet','safe','public transit','balcony','elevator']
+      const foundTraits = []
+      commonTraits.forEach(tr => {
+        if (text.includes(tr)) foundTraits.push(tr.replace(/\b(\w)/g, v => v.toUpperCase()))
+      })
+      if (foundTraits.length) heuristics.traits = foundTraits
+
+      // If heuristics produced something useful, return as filters
+      if (Object.keys(heuristics).length > 0) {
+        return res.json({
+          filters: heuristics,
+          sortBy: 'rating-high',
+          message: 'I parsed your request and found these criteria.'
+        })
+      }
+
+      // Fallback: return the original message to the frontend, prompting for clarification
       result = {
         hasMatch: false,
-        message: aiResponse
+        message: aiResponse || "Could you tell me more about your preferences?"
       }
     }
 

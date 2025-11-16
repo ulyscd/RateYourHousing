@@ -52,23 +52,50 @@ function HomePage() {
   const loadListings = async () => {
     try {
       const data = await getListings()
-      setListings(data)
-      setFilteredListings(data)
-      
-      // Load metadata for sorting (review counts, avg prices, etc.)
+
+      // Load metadata for sorting (review counts, avg prices, top traits, etc.)
       const meta = {}
       for (const listing of data) {
         try {
           const reviews = await getReviews(listing.id)
+
+          // Compute avgPrice and latestReview
+          const avgPrice = reviews.reduce((sum, r) => sum + (r.rent_price || 0), 0) / (reviews.filter(r => r.rent_price).length || 1)
+          const latestReview = reviews.length > 0 ? new Date(reviews[0].created_at) : null
+
+          // Aggregate traits frequency
+          const traitCounts = {}
+          reviews.forEach(r => {
+            const t = r.traits || []
+            t.forEach(tr => {
+              const key = ('' + tr).trim()
+              if (!key) return
+              traitCounts[key] = (traitCounts[key] || 0) + 1
+            })
+          })
+          // Sort traits by frequency and pick top 3
+          const topTraits = Object.entries(traitCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([trait]) => trait)
+
           meta[listing.id] = {
             reviewCount: reviews.length,
-            avgPrice: reviews.reduce((sum, r) => sum + (r.rent_price || 0), 0) / (reviews.filter(r => r.rent_price).length || 1),
-            latestReview: reviews.length > 0 ? new Date(reviews[0].created_at) : null
+            avgPrice: avgPrice,
+            latestReview: latestReview,
+            topTraits
           }
+
+          // Attach topTraits directly to the listing object for easy access in UI
+          listing.topTraits = topTraits
         } catch (error) {
-          meta[listing.id] = { reviewCount: 0, avgPrice: 0, latestReview: null }
+          meta[listing.id] = { reviewCount: 0, avgPrice: 0, latestReview: null, topTraits: [] }
+          listing.topTraits = []
         }
       }
+
+      setListings(data)
+      setFilteredListings(data)
       setListingsWithMeta(meta)
     } catch (error) {
       console.error('Error loading listings:', error)
@@ -399,7 +426,6 @@ function HomePage() {
           activeFiltersCount={countActiveFilters()}
           sortBy={sortBy}
           onSortChange={setSortBy}
-          onSmartMatchClick={() => setShowSmartMatch(true)}
         />
       </div>
 
@@ -420,13 +446,7 @@ function HomePage() {
         initialFilters={filters}
       />
 
-      {/* Smart Match Agent Modal */}
-      {showSmartMatch && (
-        <SmartMatchAgent
-          onClose={() => setShowSmartMatch(false)}
-          onApplyMatch={handleSmartMatchApply}
-        />
-      )}
+      {/* Smart Match Agent hidden for demo */}
     </div>
   )
 }

@@ -26,19 +26,41 @@ Install root, client and server dependencies in one step from the repository roo
 npm run install:all
 ```
 
-### 2. Add Listings Data
+### 2. Initialize the local database (server)
 
-You can add your listings data by inserting them into the database. You can do this by:
+Create the SQLite schema (creates `server/database.sqlite` and required tables):
 
-1. Using a SQLite client to insert data directly
-2. Creating a script to import your listings data
-3. Using the SQLite CLI
+```bash
+cd server
+node setup-db.js
+```
 
-Example SQL for inserting a listing:
+### 3. Populate listings and reviews
 
-```sql
-INSERT INTO listings (name, address, latitude, longitude, price, bedrooms, bathrooms, description, image_url)
-VALUES ('Apartment Name', '123 Main St, Eugene, OR', 44.0521, -123.0868, '$1200/month', '2', '1', 'Description here', 'https://example.com/image.jpg');
+Populate the listings table (default reads `server/listings.json`):
+
+```bash
+node import-listings.js
+```
+
+Populate the reviews table (default reads `server/eugene_apartment_reviews.json`):
+
+```bash
+npm run import-reviews
+```
+
+`import-reviews` now automatically recalculates each listing's `average_rating` after the import so the UI reflects the new averages.
+
+If you need to re-run the averages independently you can run:
+
+```bash
+npm run recalc-averages
+```
+
+If duplicate listings appear after imports, run the dedupe script which will backup the DB and consolidate listings with the same name:
+
+```bash
+npm run dedupe-listings
 ```
 
 ### 4. Start the app (development)

@@ -71,6 +71,16 @@ function MapComponent({ listings, onMarkerClick, hoveredListing, onMarkerHover, 
                   {listing.address && (
                     <p className="text-sm text-gray-600 mb-2">📍 {listing.address}</p>
                   )}
+                  {/* Top traits shown in popup */}
+                  {listing.topTraits && listing.topTraits.length > 0 && (
+                    <div className="flex gap-2 flex-wrap mb-2">
+                      {listing.topTraits.slice(0,3).map((t, i) => (
+                        <span key={i} className="px-2 py-1 bg-eggshell-200 rounded-full text-sm font-medium border border-eggshell-300">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   {listing.average_rating && (
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-yellow-500">⭐</span>

@@ -150,12 +150,10 @@ function ListingDetail() {
               </div>
             )}
 
-            {/* AI Summary Section */}
-            {reviews.length > 0 && (
-              <div className="mb-6">
-                <AISummary listingId={id} />
-              </div>
-            )}
+            {/* AI Summary Section - show even when there are no reviews so new listings can generate summaries */}
+            <div className="mb-6">
+              <AISummary listingId={id} />
+            </div>
           </div>
         </div>
 

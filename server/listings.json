@@ -20,7 +20,11 @@
           "rating": 4,
           "text": "Great location! Very convenient to everything downtown. The apartment is clean and well-maintained.",
           "photos": [],
-          "createdAt": "2025-11-09T01:01:07.373Z"
+          "createdAt": "2025-11-09T01:01:07.373Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 950,
+          "traits": ["Close to Campus", "Parking"]
         }
       ],
       "avgRating": 4
@@ -40,8 +44,31 @@
         "Parking"
       ],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r2",
+          "rating": 5,
+          "text": "Spacious 2BR with lots of natural light. Quiet building, friendly management.",
+          "photos": [],
+          "createdAt": "2025-10-11T12:15:00.000Z",
+          "bedrooms": 2,
+          "bathrooms": 1.5,
+          "rent_price": 1450,
+          "traits": ["Laundry", "Parking"]
+        },
+        {
+          "id": "r3",
+          "rating": 3,
+          "text": "Decent for the price, but the gym could use better equipment. Good bike storage though.",
+          "photos": [],
+          "createdAt": "2025-09-02T09:30:00.000Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 980,
+          "traits": ["Fitness Center", "Bike Storage"]
+        }
+      ],
+      "avgRating": 4
     },
     {
       "id": "osm:11133248599",
@@ -52,8 +79,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r4",
+          "rating": 4,
+          "text": "Stylish conversion with a rooftop lounge. Small units but well-kept.",
+          "photos": [],
+          "createdAt": "2025-08-21T14:00:00.000Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 1200,
+          "traits": ["Close to Campus", "Elevator"]
+        }
+      ],
+      "avgRating": 4
     },
     {
       "id": "osm:244982083",
@@ -64,8 +103,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r5",
+          "rating": 2,
+          "text": "Older building, some units have drafts. Utilities included in a few units which helped with costs.",
+          "photos": [],
+          "createdAt": "2025-06-10T08:20:00.000Z",
+          "bedrooms": 2,
+          "bathrooms": 1,
+          "rent_price": 1050,
+          "traits": ["Utilities Included", "Quiet"]
+        }
+      ],
+      "avgRating": 2
     },
     {
       "id": "osm:244982085",
@@ -76,8 +127,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r6",
+          "rating": 4,
+          "text": "Great neighborhood and lots of on-site parking. Management is responsive.",
+          "photos": [],
+          "createdAt": "2025-07-01T11:00:00.000Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 1100,
+          "traits": ["Parking", "Pet Friendly"]
+        }
+      ],
+      "avgRating": 4
     },
     {
       "id": "osm:245579403",
@@ -88,8 +151,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r7",
+          "rating": 5,
+          "text": "High-rise living with modern finishes. Balcony and great views.",
+          "photos": [],
+          "createdAt": "2025-05-15T16:45:00.000Z",
+          "bedrooms": 2,
+          "bathrooms": 2,
+          "rent_price": 1750,
+          "traits": ["Balcony", "Furnished"]
+        }
+      ],
+      "avgRating": 5
     },
     {
       "id": "osm:277457806",
@@ -100,8 +175,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r8",
+          "rating": 3,
+          "text": "Affordable and close to transit, but thin walls. Good quick option for students.",
+          "photos": [],
+          "createdAt": "2025-04-03T10:10:00.000Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 850,
+          "traits": ["Public Transit", "Close to Campus"]
+        }
+      ],
+      "avgRating": 3
     },
     {
       "id": "osm:277755629",
@@ -112,8 +199,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r9",
+          "rating": 4,
+          "text": "Quiet street and safe area; the building feels secure. Washer/dryer in-unit was a big plus.",
+          "photos": [],
+          "createdAt": "2025-03-22T09:00:00.000Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 1250,
+          "traits": ["Washer/Dryer", "Safe Area"]
+        }
+      ],
+      "avgRating": 4
     },
     {
       "id": "osm:283023152",
@@ -124,8 +223,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r10",
+          "rating": 2,
+          "text": "Management sometimes slow, and the elevator is frequently out of service. Good location though.",
+          "photos": [],
+          "createdAt": "2025-02-18T13:00:00.000Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 900,
+          "traits": ["Elevator", "Close to Campus"]
+        }
+      ],
+      "avgRating": 2
     },
     {
       "id": "osm:283722098",
@@ -136,8 +247,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r11",
+          "rating": 4,
+          "text": "Great floorplans and a welcoming staff. Secure building and easy access to campus.",
+          "photos": [],
+          "createdAt": "2025-01-12T11:30:00.000Z",
+          "bedrooms": 2,
+          "bathrooms": 1,
+          "rent_price": 1500,
+          "traits": ["Close to Campus", "Secure Building"]
+        }
+      ],
+      "avgRating": 4
     },
     {
       "id": "osm:313449507",
@@ -160,8 +283,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r12",
+          "rating": 5,
+          "text": "Amazing view from the common room and very short walk to campus. Units are modern and bright.",
+          "photos": [],
+          "createdAt": "2025-08-01T18:00:00.000Z",
+          "bedrooms": 1,
+          "bathrooms": 1,
+          "rent_price": 1350,
+          "traits": ["Close to Campus", "Rooftop Lounge"]
+        }
+      ],
+      "avgRating": 5
     },
     {
       "id": "osm:331331788",
@@ -172,8 +307,20 @@
       "description": "",
       "amenities": [],
       "photos": [],
-      "reviews": [],
-      "avgRating": 0
+      "reviews": [
+        {
+          "id": "r13",
+          "rating": 4,
+          "text": "Modern building with great amenities; rooftop terrace is a major perk. Management is professional.",
+          "photos": [],
+          "createdAt": "2025-09-10T15:20:00.000Z",
+          "bedrooms": 2,
+          "bathrooms": 1.5,
+          "rent_price": 1650,
+          "traits": ["Rooftop Terrace", "Fitness Center"]
+        }
+      ],
+      "avgRating": 4
     },
     {
       "id": "osm:345416278",
