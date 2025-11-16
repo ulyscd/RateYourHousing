@@ -946,39 +946,118 @@ app.post('/api/smart-match', async (req, res) => {
     const messages = [
       {
         role: 'system',
-        content: `You are a helpful housing search assistant. Analyze user requests and extract housing preferences.
+        content: `You are a housing search assistant for University of Oregon students in Eugene. Your job is to extract ONLY the specific housing criteria mentioned by the user.
 
-Your job is to understand what the user wants and extract specific criteria:
-- Number of bedrooms (minBedrooms, maxBedrooms)
-- Number of bathrooms (minBathrooms, maxBathrooms)
-- Price range (minPrice, maxPrice)
-- Star rating preference (minRating, maxRating)
-- Desired traits/amenities (traits array)
+IMPORTANT RULES:
+1. ONLY extract criteria that the user EXPLICITLY mentions
+2. DO NOT add traits the user didn't ask for
+3. DO NOT make assumptions
+4. Use EXACT trait names from the allowed list below
+5. Be conservative - it's better to ask for clarification than to add wrong filters
 
-When you have enough information to make a match, respond with JSON in this EXACT format:
+EXACT TRAIT NAMES (use these EXACTLY as written):
+- Air Conditioning
+- Balcony
+- Close to Campus
+- Dishwasher
+- Elevator
+- Energy Efficient
+- Fitness Center
+- Furnished
+- Good Storage
+- Hardwood Floors
+- Laundry
+- Modern
+- Parking
+- Pet Friendly
+- Pool
+- Professional Staff
+- Public Transit
+- Quick Maintenance
+- Quiet
+- Responsive Management
+- Safe Area
+- Spacious
+- Updated
+- Utilities Included
+- Walkable
+- Washer/Dryer
+
+NEGATIVE TRAITS TO AVOID (never include these):
+- Poor Maintenance
+- Poor Management
+- Slow Maintenance
+- Noisy
+- Small Units
+- Outdated
+- High Utilities
+
+EXTRACTION RULES:
+- Bedrooms: Extract only if user mentions "1 bed", "2 bedroom", "studio", etc.
+- Bathrooms: Extract only if user mentions "1 bath", "2 bathroom", etc.
+- Price: Extract only if user mentions budget, price range, "under $X", "$X-$Y", etc.
+- Rating: Only set minRating if user says "good reviews", "highly rated", "4+ stars", etc.
+- Traits: ONLY include traits user explicitly mentions
+
+EXAMPLES OF CORRECT EXTRACTION:
+
+User: "I need a 2 bedroom under $1500 with parking"
 {
   "hasMatch": true,
   "filters": {
     "minBedrooms": "2",
-    "maxBedrooms": "3",
-    "minPrice": "800",
+    "maxBedrooms": "2",
     "maxPrice": "1500",
-    "minRating": "3",
-    "traits": ["Pet Friendly", "Parking"]
+    "traits": ["Parking"]
   },
   "sortBy": "rating-high",
-  "message": "I found several apartments matching your criteria!"
+  "message": "Found apartments with 2 bedrooms under $1500 with parking!"
 }
 
-If you need more information, respond with:
+User: "quiet place close to campus with laundry"
+{
+  "hasMatch": true,
+  "filters": {
+    "traits": ["Quiet", "Close to Campus", "Laundry"]
+  },
+  "sortBy": "rating-high",
+  "message": "Showing quiet places near campus with laundry!"
+}
+
+User: "studio under $1000"
+{
+  "hasMatch": true,
+  "filters": {
+    "minBedrooms": "Studio",
+    "maxBedrooms": "Studio",
+    "maxPrice": "1000"
+  },
+  "sortBy": "price-low",
+  "message": "Here are studios under $1000!"
+}
+
+User: "I'm looking for an apartment"
 {
   "hasMatch": false,
-  "message": "What's your budget range? And do you prefer any specific amenities?"
+  "message": "I can help you find the perfect apartment! What's important to you? For example: number of bedrooms, budget, location, or amenities like parking or laundry?"
 }
 
-Common traits to look for: Pet Friendly, Parking, Gym, Pool, Laundry, Dishwasher, AC, Heating, Furnished, Utilities Included, Quiet, Safe Area, Close to Campus, Public Transit, Elevator, Balcony
+RESPONSE FORMAT:
+If you can extract ANY criteria, respond with JSON:
+{
+  "hasMatch": true,
+  "filters": { ... only criteria mentioned ... },
+  "sortBy": "rating-high",
+  "message": "brief confirmation"
+}
 
-Be conversational and helpful. Extract all criteria you can from the user's message.`
+If you need more info:
+{
+  "hasMatch": false,
+  "message": "friendly question asking for specifics"
+}
+
+REMEMBER: ONLY extract what the user explicitly mentions. Quality over quantity!`
       }
     ]
 
@@ -1009,8 +1088,8 @@ Be conversational and helpful. Extract all criteria you can from the user's mess
       body: JSON.stringify({
         model: 'openai/gpt-3.5-turbo',
         messages: messages,
-        temperature: 0.7,
-        max_tokens: 300
+        temperature: 0.3,
+        max_tokens: 400
       })
     })
 
@@ -1030,48 +1109,12 @@ Be conversational and helpful. Extract all criteria you can from the user's mess
     try {
       result = JSON.parse(aiResponse)
     } catch (e) {
-      // If not JSON, attempt a heuristic extraction of filters from the text
-      console.warn('Smart Match AI did not return JSON. RAW_SMART_MATCH_RESPONSE:', aiResponse)
-
-      // Heuristic extraction: bedrooms, price range, simple traits
-      const text = aiResponse.toLowerCase()
-      const heuristics = {}
-
-      // Bedrooms: look for patterns like '1 bed', '2 bedroom', 'two bed'
-      const bedMatch = text.match(/(\d+)\s*(?:bed|bedroom)/)
-      if (bedMatch) heuristics.minBedrooms = heuristics.maxBedrooms = bedMatch[1]
-
-      // Price: look for $800 or 800-1500 or under $1200
-      const priceRangeMatch = text.match(/\$(\d{2,5})\s*[-to]*\s*\$?(\d{2,5})?/)
-      if (priceRangeMatch) {
-        heuristics.minPrice = priceRangeMatch[1]
-        if (priceRangeMatch[2]) heuristics.maxPrice = priceRangeMatch[2]
-      } else {
-        const underMatch = text.match(/under\s*\$?(\d{2,5})/)
-        if (underMatch) heuristics.maxPrice = underMatch[1]
-      }
-
-      // Traits: look for common keywords
-      const commonTraits = ['pet friendly','parking','gym','pool','laundry','dishwasher','ac','heating','furnished','utilities included','quiet','safe','public transit','balcony','elevator']
-      const foundTraits = []
-      commonTraits.forEach(tr => {
-        if (text.includes(tr)) foundTraits.push(tr.replace(/\b(\w)/g, v => v.toUpperCase()))
-      })
-      if (foundTraits.length) heuristics.traits = foundTraits
-
-      // If heuristics produced something useful, return as filters
-      if (Object.keys(heuristics).length > 0) {
-        return res.json({
-          filters: heuristics,
-          sortBy: 'rating-high',
-          message: 'I parsed your request and found these criteria.'
-        })
-      }
+      console.warn('Smart Match AI did not return valid JSON:', aiResponse)
 
       // Fallback: return the original message to the frontend, prompting for clarification
       result = {
         hasMatch: false,
-        message: aiResponse || "Could you tell me more about your preferences?"
+        message: aiResponse || "Could you tell me more about what you're looking for? For example: number of bedrooms, budget, or specific amenities?"
       }
     }
 
