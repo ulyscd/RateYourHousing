@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FiStar, FiUpload, FiX } from 'react-icons/fi'
 import { submitReview } from '../services/api'
+import TraitsSelector from './TraitsSelector'
 
 function ReviewForm({ listingId, onSubmit }) {
   const [rating, setRating] = useState(0)
@@ -8,6 +9,7 @@ function ReviewForm({ listingId, onSubmit }) {
   const [text, setText] = useState('')
   const [images, setImages] = useState([])
   const [userName, setUserName] = useState('')
+  const [selectedTraits, setSelectedTraits] = useState([])
   const [submitting, setSubmitting] = useState(false)
 
   const handleStarClick = (value) => {
@@ -54,6 +56,7 @@ function ReviewForm({ listingId, onSubmit }) {
       formData.append('user_name', userName)
       formData.append('rating', rating)
       formData.append('text', text)
+      formData.append('traits', JSON.stringify(selectedTraits))
 
       images.forEach((img, index) => {
         formData.append('images', img.file)
@@ -67,6 +70,7 @@ function ReviewForm({ listingId, onSubmit }) {
       setText('')
       setImages([])
       setUserName('')
+      setSelectedTraits([])
       
       alert('Review submitted successfully!')
       onSubmit()
@@ -176,6 +180,16 @@ function ReviewForm({ listingId, onSubmit }) {
             ))}
           </div>
         )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-bold text-charcoal-800 mb-3">
+          Housing Traits (Optional)
+        </label>
+        <TraitsSelector
+          selectedTraits={selectedTraits}
+          onTraitsChange={setSelectedTraits}
+        />
       </div>
 
       <button

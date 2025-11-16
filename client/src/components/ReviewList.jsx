@@ -1,6 +1,9 @@
-import { FiStar } from 'react-icons/fi'
+import { FiStar, FiTrash2 } from 'react-icons/fi'
+import { deleteReview } from '../services/api'
+import { useState } from 'react'
 
-function ReviewList({ reviews }) {
+function ReviewList({ reviews, onReviewDeleted }) {
+  const [deletingId, setDeletingId] = useState(null)
   const renderStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (
       <FiStar
@@ -9,6 +12,25 @@ function ReviewList({ reviews }) {
         size={18}
       />
     ))
+  }
+
+  const handleDelete = async (reviewId) => {
+    if (!window.confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
+      return
+    }
+
+    setDeletingId(reviewId)
+    try {
+      await deleteReview(reviewId)
+      if (onReviewDeleted) {
+        onReviewDeleted()
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error)
+      alert('Failed to delete review. Please try again.')
+    } finally {
+      setDeletingId(null)
+    }
   }
 
   if (reviews.length === 0) {
@@ -29,7 +51,7 @@ function ReviewList({ reviews }) {
           style={{ animationDelay: `${index * 0.05}s` }}
         >
           <div className="flex items-start justify-between mb-4">
-            <div>
+            <div className="flex-1">
               <h4 className="font-bold text-charcoal-900 text-lg mb-1">{review.user_name}</h4>
               <p className="text-sm text-charcoal-500">
                 {new Date(review.created_at).toLocaleDateString('en-US', {
@@ -39,17 +61,43 @@ function ReviewList({ reviews }) {
                 })}
               </p>
             </div>
-            <div className="flex items-center card px-3 py-1.5 rounded-full border border-eggshell-400">
-              <div className="flex items-center">
-                {renderStars(review.rating)}
+            <div className="flex items-center gap-3">
+              <div className="flex items-center card px-3 py-1.5 rounded-full border border-eggshell-400">
+                <div className="flex items-center">
+                  {renderStars(review.rating)}
+                </div>
+                <span className="ml-2 text-sm font-bold text-charcoal-800">
+                  {review.rating}/5
+                </span>
               </div>
-              <span className="ml-2 text-sm font-bold text-charcoal-800">
-                {review.rating}/5
-              </span>
+              <button
+                onClick={() => handleDelete(review.id)}
+                disabled={deletingId === review.id}
+                className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all duration-200 disabled:opacity-50"
+                title="Delete review"
+              >
+                <FiTrash2 size={18} />
+              </button>
             </div>
           </div>
 
           <p className="text-charcoal-700 mb-4 whitespace-pre-wrap leading-relaxed">{review.text}</p>
+
+          {review.traits && review.traits.length > 0 && (
+            <div className="mb-4">
+              <h5 className="text-xs font-bold text-charcoal-600 uppercase mb-2">Traits:</h5>
+              <div className="flex flex-wrap gap-2">
+                {review.traits.map((trait, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-block px-3 py-1 bg-matcha-100 text-matcha-700 rounded-full text-xs font-medium border border-matcha-300"
+                  >
+                    {trait}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {review.images && review.images.length > 0 && (
             <div className="grid grid-cols-3 gap-3 mt-4">

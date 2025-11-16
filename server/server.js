@@ -89,6 +89,17 @@ db.serialize(() => {
       FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE
     )
   `)
+
+  // Traits table
+  db.run(`
+    CREATE TABLE IF NOT EXISTS review_traits (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      review_id INTEGER NOT NULL,
+      trait TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (review_id) REFERENCES reviews(id) ON DELETE CASCADE
+    )
+  `)
 })
 
 // Create uploads directory if it doesn't exist
@@ -200,7 +211,8 @@ app.get('/api/reviews/listing/:listingId', (req, res) => {
   const { listingId } = req.params
   db.all(
     `SELECT r.*, u.name as user_name, rt.rating, 
-            (SELECT GROUP_CONCAT(url) FROM images WHERE review_id = r.id) as image_urls
+            (SELECT GROUP_CONCAT(url) FROM images WHERE review_id = r.id) as image_urls,
+            (SELECT GROUP_CONCAT(trait) FROM review_traits WHERE review_id = r.id) as traits
      FROM reviews r
      JOIN users u ON r.user_id = u.id
      JOIN ratings rt ON rt.review_id = r.id
@@ -212,7 +224,7 @@ app.get('/api/reviews/listing/:listingId', (req, res) => {
         return res.status(500).json({ error: err.message })
       }
       
-      // Process rows to include images as array
+      // Process rows to include images and traits as arrays
       const reviews = rows.map(row => {
         const review = {
           id: row.id,
@@ -222,13 +234,18 @@ app.get('/api/reviews/listing/:listingId', (req, res) => {
           text: row.text,
           rating: row.rating,
           created_at: row.created_at,
-          images: []
+          images: [],
+          traits: []
         }
         
         if (row.image_urls) {
           review.images = row.image_urls.split(',').map(url => ({
             url: '/uploads/' + url
           }))
+        }
+        
+        if (row.traits) {
+          review.traits = row.traits.split(',')
         }
         
         return review
@@ -241,8 +258,18 @@ app.get('/api/reviews/listing/:listingId', (req, res) => {
 
 // Submit a review
 app.post('/api/reviews', upload.array('images', 10), (req, res) => {
-  const { listing_id, user_name, rating, text } = req.body
+  const { listing_id, user_name, rating, text, traits } = req.body
   const files = req.files || []
+  
+  // Parse traits if it's a JSON string
+  let traitsList = []
+  if (traits) {
+    try {
+      traitsList = typeof traits === 'string' ? JSON.parse(traits) : traits
+    } catch (e) {
+      console.error('Error parsing traits:', e)
+    }
+  }
 
   if (!listing_id || !user_name || !rating || !text) {
     return res.status(400).json({ error: 'Missing required fields' })
@@ -307,6 +334,36 @@ app.post('/api/reviews', upload.array('images', 10), (req, res) => {
                     return res.status(500).json({ error: err.message })
                   }
 
+                  // Save traits
+                  const saveTraits = (callback) => {
+                    if (traitsList && traitsList.length > 0) {
+                      let traitsProcessed = 0
+                      let hasError = false
+                      traitsList.forEach((trait) => {
+                        db.run(
+                          `INSERT INTO review_traits (review_id, trait) VALUES (?, ?)`,
+                          [reviewId, trait],
+                          (err) => {
+                            if (err) {
+                              console.error('Error saving trait:', err)
+                              if (!hasError) {
+                                hasError = true
+                                callback(err)
+                              }
+                              return
+                            }
+                            traitsProcessed++
+                            if (traitsProcessed === traitsList.length && !hasError) {
+                              callback(null)
+                            }
+                          }
+                        )
+                      })
+                    } else {
+                      callback(null)
+                    }
+                  }
+
                   // Save images
                   if (files.length > 0) {
                     let imagesProcessed = 0
@@ -328,24 +385,40 @@ app.post('/api/reviews', upload.array('images', 10), (req, res) => {
                           }
                           imagesProcessed++
                           if (imagesProcessed === files.length && !hasError) {
-                            db.run('COMMIT', (err) => {
+                            saveTraits((err) => {
                               if (err) {
-                                return res.status(500).json({ error: err.message })
+                                db.run('ROLLBACK', () => {
+                                  return res.status(500).json({ error: 'Error saving traits' })
+                                })
+                                return
                               }
-                              updateListingAverageRating(listing_id)
-                              res.json({ success: true, reviewId })
+                              db.run('COMMIT', (err) => {
+                                if (err) {
+                                  return res.status(500).json({ error: err.message })
+                                }
+                                updateListingAverageRating(listing_id)
+                                res.json({ success: true, reviewId })
+                              })
                             })
                           }
                         }
                       )
                     })
                   } else {
-                    db.run('COMMIT', (err) => {
+                    saveTraits((err) => {
                       if (err) {
-                        return res.status(500).json({ error: err.message })
+                        db.run('ROLLBACK', () => {
+                          return res.status(500).json({ error: 'Error saving traits' })
+                        })
+                        return
                       }
-                      updateListingAverageRating(listing_id)
-                      res.json({ success: true, reviewId })
+                      db.run('COMMIT', (err) => {
+                        if (err) {
+                          return res.status(500).json({ error: err.message })
+                        }
+                        updateListingAverageRating(listing_id)
+                        res.json({ success: true, reviewId })
+                      })
                     })
                   }
                 }
@@ -356,6 +429,56 @@ app.post('/api/reviews', upload.array('images', 10), (req, res) => {
       }
     )
   })
+})
+
+// Delete a review
+app.delete('/api/reviews/:id', (req, res) => {
+  const { id } = req.params
+
+  // First, get the listing_id and image files before deleting
+  db.get(
+    `SELECT r.listing_id, GROUP_CONCAT(i.url) as image_urls
+     FROM reviews r
+     LEFT JOIN images i ON i.review_id = r.id
+     WHERE r.id = ?
+     GROUP BY r.id`,
+    [id],
+    (err, row) => {
+      if (err) {
+        return res.status(500).json({ error: err.message })
+      }
+      if (!row) {
+        return res.status(404).json({ error: 'Review not found' })
+      }
+
+      const listingId = row.listing_id
+      const imageUrls = row.image_urls ? row.image_urls.split(',') : []
+
+      // Delete the review (cascade will delete ratings and images from DB)
+      db.run(
+        `DELETE FROM reviews WHERE id = ?`,
+        [id],
+        function(err) {
+          if (err) {
+            return res.status(500).json({ error: err.message })
+          }
+
+          // Delete image files from disk
+          imageUrls.forEach(filename => {
+            const filePath = path.join(uploadsDir, filename)
+            if (fs.existsSync(filePath)) {
+              fs.unlinkSync(filePath)
+            }
+          })
+
+          // Update the listing's average rating
+          updateListingAverageRating(listingId)
+
+          res.json({ success: true, message: 'Review deleted successfully' })
+        }
+      )
+    }
+  )
 })
 
 // Start server

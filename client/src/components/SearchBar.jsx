@@ -47,7 +47,7 @@ export default function SearchBar({ onLocationSelect }) {
       <div className="search-input-wrapper">
         <input
           type="text"
-          placeholder="Search for an apartment address..."
+          placeholder="Search for new apartment"
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
           className="search-input"

@@ -34,5 +34,10 @@ export const submitReview = async (formData) => {
   return response.data
 }
 
+export const deleteReview = async (reviewId) => {
+  const response = await api.delete(`/reviews/${reviewId}`)
+  return response.data
+}
+
 export default api
 

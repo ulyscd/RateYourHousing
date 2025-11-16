@@ -123,46 +123,49 @@ function HomePage() {
               <p className="text-xs text-charcoal-500 italic mb-2">
                 Made with AI assistance
               </p>
+            </div>
+            {/* Search Bar and Create Review Button */}
+            <div className="flex items-start gap-4">
+              {/* Create Review Button */}
+              <div className="relative pointer-events-auto create-review-dropdown">
+                <button
+                  onClick={() => setShowCreateReview(!showCreateReview)}
+                  className="bg-matcha-500 hover:bg-matcha-600 text-white px-5 py-3 rounded-xl font-bold hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2 whitespace-nowrap"
+                >
+                  <FiPlus size={20} />
+                  Create a Review
+                </button>
+                {showCreateReview && (
+                  <div className="absolute top-full right-0 mt-2 card-elevated rounded-xl p-4 shadow-lg border border-eggshell-400 min-w-[300px] z-30 pointer-events-auto">
+                    <label className="block text-sm font-bold text-charcoal-800 mb-2">
+                      Select Your Housing:
+                    </label>
+                    <select
+                      value={selectedListingForReview}
+                      onChange={(e) => setSelectedListingForReview(e.target.value)}
+                      className="w-full px-4 py-2 card rounded-lg border border-eggshell-400 text-charcoal-900 font-medium mb-3 focus:outline-none focus:ring-2 focus:ring-matcha-400"
+                    >
+                      <option value="">Choose a listing...</option>
+                      {listings.map((listing) => (
+                        <option key={listing.id} value={listing.id}>
+                          {listing.name}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={handleCreateReview}
+                      disabled={!selectedListingForReview}
+                      className="w-full bg-matcha-500 hover:bg-matcha-600 text-white py-2 rounded-lg font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                    >
+                      Go to Review Form
+                    </button>
+                  </div>
+                )}
+              </div>
               {/* Search Bar */}
               <div className="max-w-md">
                 <SearchBar onLocationSelect={handleLocationSelect} />
               </div>
-            </div>
-            {/* Create Review Button */}
-            <div className="relative pointer-events-auto create-review-dropdown">
-              <button
-                onClick={() => setShowCreateReview(!showCreateReview)}
-                className="bg-matcha-500 hover:bg-matcha-600 text-white px-5 py-3 rounded-xl font-bold hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
-              >
-                <FiPlus size={20} />
-                Create a Review
-              </button>
-              {showCreateReview && (
-                <div className="absolute top-full right-0 mt-2 card-elevated rounded-xl p-4 shadow-lg border border-eggshell-400 min-w-[300px] z-30 pointer-events-auto">
-                  <label className="block text-sm font-bold text-charcoal-800 mb-2">
-                    Select Your Housing:
-                  </label>
-                  <select
-                    value={selectedListingForReview}
-                    onChange={(e) => setSelectedListingForReview(e.target.value)}
-                    className="w-full px-4 py-2 card rounded-lg border border-eggshell-400 text-charcoal-900 font-medium mb-3 focus:outline-none focus:ring-2 focus:ring-matcha-400"
-                  >
-                    <option value="">Choose a listing...</option>
-                    {listings.map((listing) => (
-                      <option key={listing.id} value={listing.id}>
-                        {listing.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    onClick={handleCreateReview}
-                    disabled={!selectedListingForReview}
-                    className="w-full bg-matcha-500 hover:bg-matcha-600 text-white py-2 rounded-lg font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-                  >
-                    Go to Review Form
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>

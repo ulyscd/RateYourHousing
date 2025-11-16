@@ -40,6 +40,10 @@ function ListingDetail() {
     loadListingData()
   }
 
+  const handleReviewDeleted = () => {
+    loadListingData()
+  }
+
   if (loading) {
     return (
       <div className="h-screen flex items-center justify-center bg-eggshell-50">
@@ -175,7 +179,7 @@ function ListingDetail() {
 
           <div className="p-8">
             {activeTab === 'reviews' && (
-              <ReviewList reviews={reviews} />
+              <ReviewList reviews={reviews} onReviewDeleted={handleReviewDeleted} />
             )}
             {activeTab === 'write-review' && (
               <ReviewForm listingId={id} onSubmit={handleReviewSubmit} />
