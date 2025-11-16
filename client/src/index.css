@@ -38,3 +38,28 @@ body {
   }
 }
 
+/* Highlight animation for map pin clicks */
+@keyframes pulse-highlight {
+  0%, 100% {
+    box-shadow: 0 6px 20px rgba(132, 169, 140, 0.4);
+    transform: scale(1.05);
+  }
+  50% {
+    box-shadow: 0 8px 30px rgba(132, 169, 140, 0.6);
+    transform: scale(1.06);
+  }
+}
+
+.animate-pulse-highlight {
+  animation: pulse-highlight 1s ease-in-out;
+}
+
+/* Persistent highlight style */
+.persistent-highlight {
+  border-color: rgb(132, 169, 140) !important;
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(132, 169, 140, 0.5);
+  background: linear-gradient(135deg, #d4e7d7 0%, #fcfaf7 100%);
+}
+
+

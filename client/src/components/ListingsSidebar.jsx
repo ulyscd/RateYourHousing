@@ -1,6 +1,18 @@
 import { FiSearch, FiStar, FiMapPin } from 'react-icons/fi'
+import { useRef, useEffect } from 'react'
 
-function ListingsSidebar({ listings, searchQuery, onSearchChange, onListingClick, onListingHover, hoveredListing, clickedListing }) {
+function ListingsSidebar({ listings, searchQuery, onSearchChange, onListingClick, onListingHover, hoveredListing, clickedListing, highlightedListing }) {
+  const listingRefs = useRef({})
+  // Scroll to highlighted listing when it changes
+  useEffect(() => {
+    if (highlightedListing && listingRefs.current[highlightedListing.id]) {
+      listingRefs.current[highlightedListing.id].scrollIntoView({
+        behavior: 'smooth',
+        block: 'center'
+      })
+    }
+  }, [highlightedListing])
+
   const renderStars = (rating) => {
     const stars = []
     const fullStars = Math.round(rating || 0)
@@ -17,8 +29,8 @@ function ListingsSidebar({ listings, searchQuery, onSearchChange, onListingClick
   }
 
   return (
-    <div className="w-96 bg-eggshell-100 flex flex-col h-screen overflow-hidden shadow-lg animate-fade-in border-l border-eggshell-400">
-      <div className="p-6 border-b border-eggshell-400">
+    <div className="w-96 bg-eggshell-100 flex flex-col h-full overflow-hidden shadow-lg animate-fade-in border-l border-eggshell-400">
+      <div className="p-6 border-b border-eggshell-400 flex-shrink-0">
         <h1 className="text-3xl font-extrabold text-charcoal-900 mb-2 tracking-tight">
           RateMyHousing
         </h1>
@@ -45,15 +57,19 @@ function ListingsSidebar({ listings, searchQuery, onSearchChange, onListingClick
             {listings.map((listing, index) => {
               const isClicked = clickedListing?.id === listing.id
               const isHovered = hoveredListing?.id === listing.id
+              const isHighlighted = highlightedListing?.id === listing.id
               
               return (
                 <button
                   key={listing.id}
+                  ref={el => listingRefs.current[listing.id] = el}
                   onClick={() => onListingClick(listing)}
                   onMouseEnter={() => onListingHover(listing)}
                   onMouseLeave={() => onListingHover(null)}
                   className={`w-full p-4 card rounded-2xl text-left transition-all duration-300 animate-slide-up border-2 ${
-                    isClicked
+                    isHighlighted
+                      ? 'persistent-highlight animate-pulse-highlight'
+                      : isClicked
                       ? 'border-matcha-500 scale-[1.02] shadow-lg bg-eggshell-200' 
                       : isHovered
                       ? 'border-matcha-400 scale-[1.02] shadow-md bg-eggshell-200'

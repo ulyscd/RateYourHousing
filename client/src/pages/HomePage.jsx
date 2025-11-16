@@ -12,6 +12,7 @@ function HomePage() {
   const [filteredListings, setFilteredListings] = useState([])
   const [clickedListing, setClickedListing] = useState(null)
   const [hoveredListing, setHoveredListing] = useState(null)
+  const [highlightedListing, setHighlightedListing] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateReview, setShowCreateReview] = useState(false)
   const [selectedListingForReview, setSelectedListingForReview] = useState('')
@@ -45,18 +46,26 @@ function HomePage() {
 
   const handleListingClick = (listing) => {
     setClickedListing(listing)
+    setHighlightedListing(null) // Clear highlight when navigating
     navigate(`/listing/${listing.id}`)
   }
 
   const handleMarkerClick = (listing) => {
-    // Set clicked listing for menu highlight only
-    setClickedListing(listing)
-    navigate(`/listing/${listing.id}`)
+    // When a map pin is clicked:
+    // 1. Show the popup on the map (handled by MapComponent)
+    // 2. Highlight the corresponding listing in the sidebar (stays highlighted)
+    // 3. Auto-scroll to that listing
+    setHighlightedListing(listing)
   }
   
   const handleMarkerHover = (listing) => {
     // Set hovered listing for beacon and menu highlight
     setHoveredListing(listing)
+  }
+
+  const handlePopupClose = () => {
+    // Clear the highlight when the popup is closed
+    setHighlightedListing(null)
   }
 
   const handleCreateReview = () => {
@@ -170,6 +179,7 @@ function HomePage() {
                 onMarkerClick={handleMarkerClick}
                 onMarkerHover={handleMarkerHover}
                 hoveredListing={hoveredListing}
+                onPopupClose={handlePopupClose}
               />
             </div>
           </div>
@@ -184,6 +194,7 @@ function HomePage() {
           onListingHover={setHoveredListing}
           hoveredListing={hoveredListing}
           clickedListing={clickedListing}
+          highlightedListing={highlightedListing}
         />
       </div>
 
