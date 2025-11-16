@@ -1,4 +1,4 @@
-import { FiSearch, FiStar, FiMapPin, FiSliders, FiChevronDown, FiZap } from 'react-icons/fi'
+import { FiSearch, FiStar, FiMapPin, FiSliders, FiChevronDown, FiZap, FiHome, FiDollarSign } from 'react-icons/fi'
 import { useRef, useEffect, useState } from 'react'
 
 function ListingsSidebar({ 
@@ -43,6 +43,54 @@ function ListingsSidebar({
     return stars
   }
 
+  const formatBedroomBathroom = (listing) => {
+    const bedrooms = listing.bedrooms_list ? listing.bedrooms_list.split(',').filter(b => b && b !== 'null') : []
+    const bathrooms = listing.bathrooms_list ? listing.bathrooms_list.split(',').filter(b => b && b !== 'null') : []
+    
+    const uniqueBedrooms = [...new Set(bedrooms)].sort()
+    const uniqueBathrooms = [...new Set(bathrooms)].sort()
+    
+    let bedroomText = ''
+    if (uniqueBedrooms.length > 0) {
+      if (uniqueBedrooms.length === 1) {
+        bedroomText = uniqueBedrooms[0] === 'Studio' ? 'Studio' : `${uniqueBedrooms[0]} bed`
+      } else {
+        bedroomText = `${uniqueBedrooms[0]}-${uniqueBedrooms[uniqueBedrooms.length - 1]} bed`
+      }
+    }
+    
+    let bathroomText = ''
+    if (uniqueBathrooms.length > 0) {
+      if (uniqueBathrooms.length === 1) {
+        bathroomText = `${uniqueBathrooms[0]} bath`
+      } else {
+        bathroomText = `${uniqueBathrooms[0]}-${uniqueBathrooms[uniqueBathrooms.length - 1]} bath`
+      }
+    }
+    
+    if (bedroomText && bathroomText) {
+      return `${bedroomText} • ${bathroomText}`
+    } else if (bedroomText) {
+      return bedroomText
+    } else if (bathroomText) {
+      return bathroomText
+    }
+    return null
+  }
+
+  const formatPriceRange = (listing) => {
+    if (listing.min_price && listing.max_price) {
+      if (listing.min_price === listing.max_price) {
+        return `$${Math.round(listing.min_price)}/mo`
+      } else {
+        return `$${Math.round(listing.min_price)} - $${Math.round(listing.max_price)}/mo`
+      }
+    } else if (listing.min_price) {
+      return `$${Math.round(listing.min_price)}/mo`
+    }
+    return null
+  }
+
   return (
     <div className="w-[480px] bg-eggshell-100 flex flex-col h-full overflow-hidden shadow-lg animate-fade-in border-l border-eggshell-400">
       <div className="p-6 border-b border-eggshell-400 flex-shrink-0 space-y-3">
@@ -70,6 +118,15 @@ function ListingsSidebar({
             )}
           </button>
         </div>
+
+        {/* Smart Match Button */}
+        <button
+          onClick={onSmartMatchClick}
+          className="w-full px-4 py-3 bg-gradient-to-r from-matcha-500 to-matcha-600 hover:from-matcha-600 hover:to-matcha-700 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 border-2 border-matcha-600"
+        >
+          <FiZap size={18} />
+          <span>Smart Match</span>
+        </button>
 
         {/* Sort Dropdown */}
         <div className="relative">
@@ -116,8 +173,6 @@ function ListingsSidebar({
           )}
         </div>
 
-        {/* Smart Match feature temporarily hidden for demos */}
-        {/* To re-enable, restore the button above and pass onSmartMatchClick from HomePage */}
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-2 scrollbar-thin scrollbar-thumb-eggshell-400 scrollbar-track-transparent">
@@ -177,6 +232,23 @@ function ListingsSidebar({
                       <span className="truncate">{listing.address}</span>
                     </div>
                   )}
+                  
+                  {/* Bedroom/Bathroom and Price Info */}
+                  <div className="flex items-center gap-3 text-sm text-charcoal-700 mb-2">
+                    {formatBedroomBathroom(listing) && (
+                      <div className="flex items-center">
+                        <FiHome className="mr-1.5 text-matcha-500" size={14} />
+                        <span className="font-medium">{formatBedroomBathroom(listing)}</span>
+                      </div>
+                    )}
+                    {formatPriceRange(listing) && (
+                      <div className="flex items-center">
+                        <FiDollarSign className="mr-1 text-matcha-500" size={14} />
+                        <span className="font-semibold text-matcha-600">{formatPriceRange(listing)}</span>
+                      </div>
+                    )}
+                  </div>
+                  
                   {/* Top traits (up to 3) */}
                   {listing.topTraits && listing.topTraits.length > 0 && (
                     <div className="flex items-center gap-2 mt-2">
@@ -186,9 +258,6 @@ function ListingsSidebar({
                         </span>
                       ))}
                     </div>
-                  )}
-                  {listing.price && (
-                    <p className="text-base font-semibold text-matcha-600">{listing.price}</p>
                   )}
                 </button>
               )

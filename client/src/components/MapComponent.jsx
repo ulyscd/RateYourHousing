@@ -71,6 +71,46 @@ function MapComponent({ listings, onMarkerClick, hoveredListing, onMarkerHover, 
                   {listing.address && (
                     <p className="text-sm text-gray-600 mb-2">📍 {listing.address}</p>
                   )}
+                  
+                  {/* Bedroom/Bathroom and Price Info */}
+                  <div className="flex flex-col gap-1 mb-2 text-sm">
+                    {(() => {
+                      const bedrooms = listing.bedrooms_list ? listing.bedrooms_list.split(',').filter(b => b && b !== 'null') : []
+                      const bathrooms = listing.bathrooms_list ? listing.bathrooms_list.split(',').filter(b => b && b !== 'null') : []
+                      const uniqueBedrooms = [...new Set(bedrooms)].sort()
+                      const uniqueBathrooms = [...new Set(bathrooms)].sort()
+                      
+                      let bedroomText = ''
+                      if (uniqueBedrooms.length > 0) {
+                        if (uniqueBedrooms.length === 1) {
+                          bedroomText = uniqueBedrooms[0] === 'Studio' ? 'Studio' : `${uniqueBedrooms[0]} bed`
+                        } else {
+                          bedroomText = `${uniqueBedrooms[0]}-${uniqueBedrooms[uniqueBedrooms.length - 1]} bed`
+                        }
+                      }
+                      
+                      let bathroomText = ''
+                      if (uniqueBathrooms.length > 0) {
+                        if (uniqueBathrooms.length === 1) {
+                          bathroomText = `${uniqueBathrooms[0]} bath`
+                        } else {
+                          bathroomText = `${uniqueBathrooms[0]}-${uniqueBathrooms[uniqueBathrooms.length - 1]} bath`
+                        }
+                      }
+                      
+                      const info = [bedroomText, bathroomText].filter(Boolean).join(' • ')
+                      return info ? <p className="text-gray-700 font-medium">🏠 {info}</p> : null
+                    })()}
+                    
+                    {listing.min_price && listing.max_price && (
+                      <p className="text-green-700 font-semibold">
+                        💵 {listing.min_price === listing.max_price 
+                          ? `$${Math.round(listing.min_price)}/mo` 
+                          : `$${Math.round(listing.min_price)} - $${Math.round(listing.max_price)}/mo`}
+                      </p>
+                    )}
+                  </div>
+                  
                   {/* Top traits shown in popup */}
                   {listing.topTraits && listing.topTraits.length > 0 && (
                     <div className="flex gap-2 flex-wrap mb-2">

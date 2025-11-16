@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FiX, FiSend, FiMessageSquare, FiZap } from 'react-icons/fi'
+import api from '../services/api'
 
 function SmartMatchAgent({ onApplyMatch, onClose }) {
   const [messages, setMessages] = useState([
@@ -24,18 +25,12 @@ function SmartMatchAgent({ onApplyMatch, onClose }) {
 
     try {
       // Call backend to analyze the request
-      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5001/api'}/smart-match`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          userInput: userMessage,
-          conversationHistory: newMessages
-        })
+      const response = await api.post('/smart-match', {
+        userInput: userMessage,
+        conversationHistory: newMessages
       })
 
-      const data = await response.json()
+      const data = response.data
 
       if (data.filters) {
         // Add assistant response

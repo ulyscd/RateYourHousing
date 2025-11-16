@@ -426,6 +426,7 @@ function HomePage() {
           activeFiltersCount={countActiveFilters()}
           sortBy={sortBy}
           onSortChange={setSortBy}
+          onSmartMatchClick={() => setShowSmartMatch(true)}
         />
       </div>
 
@@ -446,7 +447,13 @@ function HomePage() {
         initialFilters={filters}
       />
 
-      {/* Smart Match Agent hidden for demo */}
+      {/* Smart Match Agent */}
+      {showSmartMatch && (
+        <SmartMatchAgent
+          onApplyMatch={handleSmartMatchApply}
+          onClose={() => setShowSmartMatch(false)}
+        />
+      )}
     </div>
   )
 }

@@ -187,7 +187,19 @@ const updateListingAverageRating = (listingId) => {
 // Get all listings
 app.get('/api/listings', (req, res) => {
   db.all(
-    `SELECT * FROM listings ORDER BY name`,
+    `SELECT 
+      l.*,
+      AVG(rat.rating) as average_rating,
+      COUNT(DISTINCT r.id) as review_count,
+      MIN(r.rent_price) as min_price,
+      MAX(r.rent_price) as max_price,
+      GROUP_CONCAT(DISTINCT r.bedrooms) as bedrooms_list,
+      GROUP_CONCAT(DISTINCT r.bathrooms) as bathrooms_list
+     FROM listings l
+     LEFT JOIN reviews r ON l.id = r.listing_id
+     LEFT JOIN ratings rat ON r.id = rat.review_id
+     GROUP BY l.id
+     ORDER BY l.name`,
     [],
     (err, rows) => {
       if (err) {
@@ -202,7 +214,15 @@ app.get('/api/listings', (req, res) => {
 app.get('/api/listings/:id', (req, res) => {
   const { id } = req.params
   db.get(
-    `SELECT * FROM listings WHERE id = ?`,
+    `SELECT 
+      l.*,
+      AVG(rat.rating) as average_rating,
+      COUNT(DISTINCT r.id) as review_count
+     FROM listings l
+     LEFT JOIN reviews r ON l.id = r.listing_id
+     LEFT JOIN ratings rat ON r.id = rat.review_id
+     WHERE l.id = ?
+     GROUP BY l.id`,
     [id],
     (err, row) => {
       if (err) {
