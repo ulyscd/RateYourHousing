@@ -1,8 +1,23 @@
-import { FiSearch, FiStar, FiMapPin } from 'react-icons/fi'
-import { useRef, useEffect } from 'react'
+import { FiSearch, FiStar, FiMapPin, FiSliders, FiChevronDown, FiZap } from 'react-icons/fi'
+import { useRef, useEffect, useState } from 'react'
 
-function ListingsSidebar({ listings, searchQuery, onSearchChange, onListingClick, onListingHover, hoveredListing, clickedListing, highlightedListing }) {
+function ListingsSidebar({ 
+  listings, 
+  searchQuery, 
+  onSearchChange, 
+  onListingClick, 
+  onListingHover, 
+  hoveredListing, 
+  clickedListing, 
+  highlightedListing,
+  onFilterClick,
+  activeFiltersCount,
+  sortBy,
+  onSortChange,
+  onSmartMatchClick
+}) {
   const listingRefs = useRef({})
+  const [showSortDropdown, setShowSortDropdown] = useState(false)
   // Scroll to highlighted listing when it changes
   useEffect(() => {
     if (highlightedListing && listingRefs.current[highlightedListing.id]) {
@@ -30,21 +45,85 @@ function ListingsSidebar({ listings, searchQuery, onSearchChange, onListingClick
 
   return (
     <div className="w-[480px] bg-eggshell-100 flex flex-col h-full overflow-hidden shadow-lg animate-fade-in border-l border-eggshell-400">
-      <div className="p-6 border-b border-eggshell-400 flex-shrink-0">
-        <h1 className="text-4xl font-extrabold text-charcoal-900 mb-3 tracking-tight">
-          Rate Your Housing
-        </h1>
-        <p className="text-sm text-charcoal-600 mb-5 italic">Find your perfect home. Share your experience.</p>
-        <div className="relative">
-          <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-charcoal-400 z-10" size={20} />
-          <input
-            type="text"
-            placeholder="Search apartments..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-eggshell-50 rounded-xl border border-eggshell-400 focus:outline-none focus:ring-2 focus:ring-matcha-400 focus:border-matcha-400 transition-all duration-200 placeholder:text-charcoal-400 text-charcoal-900 font-medium shadow-sm text-base"
-          />
+      <div className="p-6 border-b border-eggshell-400 flex-shrink-0 space-y-3">
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-charcoal-400 z-10" size={20} />
+            <input
+              type="text"
+              placeholder="Search apartments..."
+              value={searchQuery}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-eggshell-50 rounded-xl border border-eggshell-400 focus:outline-none focus:ring-2 focus:ring-matcha-400 focus:border-matcha-400 transition-all duration-200 placeholder:text-charcoal-400 text-charcoal-900 font-medium shadow-sm text-base"
+            />
+          </div>
+          <button
+            onClick={onFilterClick}
+            className="relative px-5 py-3 bg-matcha-500 hover:bg-matcha-600 text-white rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg border-2 border-matcha-600 flex items-center gap-2"
+          >
+            <FiSliders size={20} />
+            <span>Filter</span>
+            {activeFiltersCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
         </div>
+
+        {/* Sort Dropdown */}
+        <div className="relative">
+          <button
+            onClick={() => setShowSortDropdown(!showSortDropdown)}
+            className="w-full px-4 py-2.5 bg-eggshell-50 rounded-lg border border-eggshell-400 hover:bg-eggshell-200 transition-all duration-200 flex items-center justify-between text-charcoal-800 font-medium text-sm"
+          >
+            <span>Sort by: {sortBy === 'rating-high' ? 'Rating (High to Low)' : 
+                           sortBy === 'rating-low' ? 'Rating (Low to High)' :
+                           sortBy === 'price-low' ? 'Price (Low to High)' :
+                           sortBy === 'price-high' ? 'Price (High to Low)' :
+                           sortBy === 'most-reviewed' ? 'Most Reviewed' :
+                           sortBy === 'newest' ? 'Newest' : 'Name'}</span>
+            <FiChevronDown className={`transition-transform duration-200 ${showSortDropdown ? 'rotate-180' : ''}`} />
+          </button>
+          
+          {showSortDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-eggshell-50 rounded-lg border border-eggshell-400 shadow-lg z-20 overflow-hidden">
+              {[
+                { value: 'name', label: 'Name (A-Z)' },
+                { value: 'rating-high', label: 'Rating (High to Low)' },
+                { value: 'rating-low', label: 'Rating (Low to High)' },
+                { value: 'price-low', label: 'Price (Low to High)' },
+                { value: 'price-high', label: 'Price (High to Low)' },
+                { value: 'most-reviewed', label: 'Most Reviewed' },
+                { value: 'newest', label: 'Newest' }
+              ].map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() => {
+                    onSortChange(option.value)
+                    setShowSortDropdown(false)
+                  }}
+                  className={`w-full px-4 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
+                    sortBy === option.value
+                      ? 'bg-matcha-500 text-white'
+                      : 'hover:bg-eggshell-200 text-charcoal-800'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Smart Match Button */}
+        <button
+          onClick={onSmartMatchClick}
+          className="w-full px-4 py-2.5 bg-gradient-to-r from-matcha-500 to-matcha-600 hover:from-matcha-600 hover:to-matcha-700 text-white rounded-lg font-semibold transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+        >
+          <FiZap size={18} />
+          <span>Smart Match AI</span>
+        </button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-2 scrollbar-thin scrollbar-thumb-eggshell-400 scrollbar-track-transparent">
