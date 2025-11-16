@@ -1,0 +1,362 @@
+[
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "Sarah",
+    "stars": 1,
+    "review": "Management is a mess! They are completely useless 99% of the time when it comes to issues. The amenities are always broken and closed down. They do not respect their tenants, we are a paycheck nothing more. RUN AWAY!"
+  },
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "Michael",
+    "stars": 2,
+    "review": "My son lived here for a year. In cold February, his heat went out. Despite many phone calls and emails, they did not fix it until May. They did loan them a couple of space heaters, but that only heats one room."
+  },
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "Jadyn",
+    "stars": 5,
+    "review": "The staff here are professional and courteous. The amenities are amazing, the apartments themselves have so much including in unit washer and dryers. It's impossible to find apartment with washer/dryer sets in the unit for such a great price."
+  },
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "Alex",
+    "stars": 1,
+    "review": "They charge for maintenance done. Maintenance can take up to 3 months to fix something. It'd be safer parking on the street. I've caught roommates stealing my food and using my stuff without permission."
+  },
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "Jennifer",
+    "stars": 1,
+    "review": "If I could give zero stars I would. Apartment was dirty, carpets stained, furniture thrown around and not setup. Mattress with stains. Furnished sectional looks like it was brought in from the street."
+  },
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "David",
+    "stars": 1,
+    "review": "DO NOT LIVE HERE! It is by far the worse renting experience I have ever had! Security gates were broken allowing homeless people to wonder the premise. Management is incompetent."
+  },
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "Emily",
+    "stars": 2,
+    "review": "Security is not what we thought it would be at this complex. Basically there isn't any and homeless and others not living on property go into the gym and pool area, parking garage, etc."
+  },
+  {
+    "apartment_name": "The Hayward",
+    "first_name": "Chris",
+    "stars": 3,
+    "review": "It was nice having low rent, access to downtown bus station when I didn't have a car, and got lucky with roommates that I'm still friends with. The furnishings were decent."
+  },
+  {
+    "apartment_name": "Patterson Tower",
+    "first_name": "Rachel",
+    "stars": 5,
+    "review": "Great Staff, awesome neighbors, I have yet to have a bad interaction after living here for a while! Super duper spacious, too!"
+  },
+  {
+    "apartment_name": "Patterson Tower",
+    "first_name": "Marcus",
+    "stars": 5,
+    "review": "I've lived here for about 4 years and I love the community and atmosphere of the building. Beautiful views, central location, excellent staffing."
+  },
+  {
+    "apartment_name": "Patterson Tower",
+    "first_name": "Lisa",
+    "stars": 4,
+    "review": "I've lived in Patterson Tower for several years and the residents have always been relatively quiet. The amenities are helpful and staff is excellent and maintenance is the best."
+  },
+  {
+    "apartment_name": "Patterson Tower",
+    "first_name": "Kevin",
+    "stars": 3,
+    "review": "I recently moved here and our unit is great. The staff is nice. Only negative is there's practically no parking and to get one of the designated spots you have to join a wait list."
+  },
+  {
+    "apartment_name": "Patterson Tower",
+    "first_name": "Jessica",
+    "stars": 2,
+    "review": "Avenue 5 taking over this building has diminished the charm and character. The building is from the 1950s and is worn, with constant upkeep of leaking/breaking pipes and failing utilities."
+  },
+  {
+    "apartment_name": "Patterson Tower",
+    "first_name": "Andrew",
+    "stars": 3,
+    "review": "Patterson Tower is in a great location but there are many aspects that need improvement, including washing and drying clothes, lack of air conditioning, and very limited hot water."
+  },
+  {
+    "apartment_name": "Patterson Tower",
+    "first_name": "Brandon",
+    "stars": 4,
+    "review": "The floorplans are spacious, you can't hear your neighbors, and management is responsive to residential needs. Unfortunately, the rent is quite high for an older building."
+  },
+  {
+    "apartment_name": "Eugene Manor",
+    "first_name": "Taylor",
+    "stars": 3,
+    "review": "The apartment complex is in a convenient spot for me to use public transportation to get to school. The building is older and not very updated, but within my small budget and allows me to live alone."
+  },
+  {
+    "apartment_name": "Eugene Manor",
+    "first_name": "Morgan",
+    "stars": 3,
+    "review": "It is in a very busy part of town and can be noisy in the evening times with sirens and yelling. The studio apartments do have a lot of storage, and the layout is functional."
+  },
+  {
+    "apartment_name": "Stadium Park Apartments",
+    "first_name": "Jordan",
+    "stars": 1,
+    "review": "I would give it a zero if allowed, they will screw you over when you move out. They will lie and no matter what you do they will still charge you hundreds of dollars."
+  },
+  {
+    "apartment_name": "Stadium Park Apartments",
+    "first_name": "Samantha",
+    "stars": 2,
+    "review": "Lived here for 1 year, and regret every minute of it. Close out charges for an apartment with no damages was almost another month's rent."
+  },
+  {
+    "apartment_name": "Stadium Park Apartments",
+    "first_name": "Nicole",
+    "stars": 5,
+    "review": "I love Stadium because of a few reasons! I am living in a 4x2 apartment. The staff did a great job matching me with friendly people. I love how spacious the apartments are!"
+  },
+  {
+    "apartment_name": "Stadium Park Apartments",
+    "first_name": "Tyler",
+    "stars": 2,
+    "review": "In the first week I moved in, there's been a shooting, stabbing, break in, and other complaints. The dryer sucks, carpet is all stained, and the place is in need of some upkeep."
+  },
+  {
+    "apartment_name": "Stadium Park Apartments",
+    "first_name": "Casey",
+    "stars": 3,
+    "review": "The apartments come fully furnished which is a major draw, rent is reasonable and the location is close to everything. Parking and AC are not included."
+  },
+  {
+    "apartment_name": "The Hutton",
+    "first_name": "Emma",
+    "stars": 4,
+    "review": "The Hutton has spacious floor plans with large bedrooms. The building is pet friendly and has a convenient South University location near campus."
+  },
+  {
+    "apartment_name": "Skybox Apartments",
+    "first_name": "Ryan",
+    "stars": 5,
+    "review": "Conveniently located near the law school - only a 10 minute walk away. Great view of the university from the lounge at top of the complex. Spacious floor plans and clean apartments."
+  },
+  {
+    "apartment_name": "Skybox Apartments",
+    "first_name": "Jacob",
+    "stars": 2,
+    "review": "I lived here for a year and it straight up sucked. WiFi was very slow apartments built as cheap as possible."
+  },
+  {
+    "apartment_name": "Skybox Apartments",
+    "first_name": "Madison",
+    "stars": 3,
+    "review": "Overall It's an okay apartment for the first one, as with a lot of student apartment options you'll always be able to find issues. It's simple, not far from campus."
+  },
+  {
+    "apartment_name": "Courtside Apartments",
+    "first_name": "Hannah",
+    "stars": 5,
+    "review": "I have loved living at Courtside for the past year and am excited to live here again next year! It is such an amazing place to live as a student!"
+  },
+  {
+    "apartment_name": "Courtside Apartments",
+    "first_name": "Olivia",
+    "stars": 4,
+    "review": "This beautiful apartment features spacious bedrooms with premium furnishings. The bedrooms offer a double bed and a workspace. Access to shared kitchen with all essential appliances."
+  },
+  {
+    "apartment_name": "The Kincaid",
+    "first_name": "Nathan",
+    "stars": 4,
+    "review": "2 bedroom 1 bathroom South University apartment with great location near campus. One parking stall per unit and convenient access to University of Oregon."
+  },
+  {
+    "apartment_name": "The 515",
+    "first_name": "Ashley",
+    "stars": 1,
+    "review": "DO NOT LIVE HERE! I wish I could give negative stars. The staff is so unorganized, never on the same page about their own policies."
+  },
+  {
+    "apartment_name": "The 515",
+    "first_name": "Matthew",
+    "stars": 2,
+    "review": "If you want an apartment that couldn't care less about your kid and more for the money in your pocket this is the place for you. Staff and management show inability to help."
+  },
+  {
+    "apartment_name": "The 515",
+    "first_name": "Daniel",
+    "stars": 4,
+    "review": "Living here now and really like it. Decent amenities and feels safe. The rooftop terrace and fitness center are great features."
+  },
+  {
+    "apartment_name": "The 515",
+    "first_name": "Sophia",
+    "stars": 5,
+    "review": "The 515 offers stylish modern accommodations with spacious floor plans. Built-in dining area, full-sized kitchen with stainless steel appliances, and quartz stone countertops."
+  },
+  {
+    "apartment_name": "The 515",
+    "first_name": "William",
+    "stars": 2,
+    "review": "Poor management, bad business practices and mediocre apartments make the 515 a last resort option. I wouldn't recommend living here."
+  },
+  {
+    "apartment_name": "Valley Ridge Apartments",
+    "first_name": "Aaron",
+    "stars": 5,
+    "review": "The manager is excellent. He's always doing a great job trying to help people out. The maintenance lady is one of the best people I've ever met. This place is one of the best."
+  },
+  {
+    "apartment_name": "Valley Ridge Apartments",
+    "first_name": "Chloe",
+    "stars": 5,
+    "review": "I loved it here. Simple but easy living, decent rent, and neighbors who weren't addicted to the hard stuff. Great experience."
+  },
+  {
+    "apartment_name": "Valley Ridge Apartments",
+    "first_name": "Ethan",
+    "stars": 2,
+    "review": "Unprofessional office staff. Waited 7 business days for my application to be processed. Called 3 times and was told they haven't gotten around to it yet."
+  },
+  {
+    "apartment_name": "Park Place",
+    "first_name": "Isabella",
+    "stars": 4,
+    "review": "Park Place offers secure studio and one bedroom units on the edge of Downtown Eugene. Each unit includes stainless steel appliances and a stackable washer and dryer."
+  },
+  {
+    "apartment_name": "Park Place",
+    "first_name": "Grace",
+    "stars": 3,
+    "review": "Located across from the remodeled Farmers Market within walking distance of the Hult Center and Whole Foods. Building features elevator and high-speed internet access."
+  },
+  {
+    "apartment_name": "High Street Terrace",
+    "first_name": "Benjamin",
+    "stars": 2,
+    "review": "This is not the place it was 6 years ago. The building was purchased by new owners and they reduced garbage pick ups to once a week resulting in overflowing garbage areas."
+  },
+  {
+    "apartment_name": "High Street Terrace",
+    "first_name": "Ava",
+    "stars": 3,
+    "review": "A landmark high-rise apartment building in central downtown Eugene. The floorplans are spacious with high ceilings and fitness center amenities."
+  },
+  {
+    "apartment_name": "The Pearl",
+    "first_name": "Lily",
+    "stars": 3,
+    "review": "The Pearl offers a wide variety of apartment styles with beautiful finishings and sleek modern appliances. There is a newly remodeled fitness center with yoga space."
+  },
+  {
+    "apartment_name": "The Pearl",
+    "first_name": "James",
+    "stars": 2,
+    "review": "The elevators are really slow and there are only 2. During the summer it gets unbearably hot, and the carpet has liquid stain trails. Way too pricey."
+  },
+  {
+    "apartment_name": "The Pearl",
+    "first_name": "Mia",
+    "stars": 3,
+    "review": "Every apartment is fitted with beautiful finishings and spacious bedrooms. The roof was wonderful during the summer with great views, but can hear drunken noise on weekends."
+  },
+  {
+    "apartment_name": "The Prefontaine",
+    "first_name": "Liam",
+    "stars": 5,
+    "review": "Located at the epicenter of the University of Oregon campus. The 20 unit complex offers majestic views of McArthur Court and Hayward Field with state-of-the-art appliances."
+  },
+  {
+    "apartment_name": "The Prefontaine",
+    "first_name": "Charlotte",
+    "stars": 5,
+    "review": "Ideal for campus living with three and four bedroom units featuring generous room sizes, spacious floor plans and oversized windows. Rooftop terrace provides great community space."
+  },
+  {
+    "apartment_name": "The Prefontaine",
+    "first_name": "Noah",
+    "stars": 4,
+    "review": "Secure underground parking, key card access, entry video monitors, air conditioning in each unit. Large bedrooms with washer/dryer in each unit and incredible vistas."
+  },
+  {
+    "apartment_name": "The Woolworth",
+    "first_name": "Zoe",
+    "stars": 4,
+    "review": "Great downtown location on Willamette Street. Modern apartments with convenient access to shops and restaurants. Good security features."
+  },
+  {
+    "apartment_name": "The Patterson Social",
+    "first_name": "Lucas",
+    "stars": 4,
+    "review": "The Patterson Social offers modern amenities in a convenient downtown location. Well-maintained building with responsive management."
+  },
+  {
+    "apartment_name": "Ya-Po-Ah Terrace",
+    "first_name": "Amelia",
+    "stars": 3,
+    "review": "Ya-Po-Ah Terrace on Pearl Street provides affordable housing options. Older building but decent maintenance and close to downtown amenities."
+  },
+  {
+    "apartment_name": "The Sonja",
+    "first_name": "Mason",
+    "stars": 4,
+    "review": "The Sonja on Alder Street offers convenient campus access. Clean apartments with good management response times to maintenance requests."
+  },
+  {
+    "apartment_name": "The Anthony",
+    "first_name": "Harper",
+    "stars": 3,
+    "review": "The Anthony provides student-friendly housing near campus on East 19th Street. Basic amenities with reasonable rent for the area."
+  },
+  {
+    "apartment_name": "Amazon Corners",
+    "first_name": "Elijah",
+    "stars": 3,
+    "review": "Amazon Corners on East 32nd Avenue is a bit further from campus but offers quiet living. Good value for students with cars."
+  },
+  {
+    "apartment_name": "Camelot",
+    "first_name": "Abigail",
+    "stars": 3,
+    "review": "Camelot apartments on East 18th Avenue provide basic student housing. Older complex but management keeps it maintained. Close to campus."
+  },
+  {
+    "apartment_name": "Oregon Chateau",
+    "first_name": "Logan",
+    "stars": 4,
+    "review": "Oregon Chateau on Orchard Street has spacious units. Good location near campus with friendly neighbors and responsive maintenance staff."
+  },
+  {
+    "apartment_name": "Woodside Manor",
+    "first_name": "Ella",
+    "stars": 3,
+    "review": "Woodside Manor on Harris Street offers affordable apartments near UO. Older building with character, decent amenities for the price."
+  },
+  {
+    "apartment_name": "959 Franklin Apartments",
+    "first_name": "Jack",
+    "stars": 4,
+    "review": "959 Franklin Apartments on Franklin Boulevard is conveniently located. Modern updates and good management make it a solid choice for students."
+  },
+  {
+    "apartment_name": "Greenway Townhouses",
+    "first_name": "Sofia",
+    "stars": 4,
+    "review": "Greenway Townhouses on River Road provide spacious living. Townhouse style gives more privacy than typical apartments. Quiet neighborhood."
+  },
+  {
+    "apartment_name": "Laurel Grove Apartments",
+    "first_name": "Carter",
+    "stars": 3,
+    "review": "Laurel Grove on Cleveland Street is a bit out of the way but offers good value. Peaceful setting with adequate parking."
+  },
+  {
+    "apartment_name": "2125 Franklin",
+    "first_name": "Evelyn",
+    "stars": 4,
+    "review": "2125 Franklin Boulevard offers WiFi, fitness center, study space, bike storage and parking. Great amenities for students."
+  }
+]
