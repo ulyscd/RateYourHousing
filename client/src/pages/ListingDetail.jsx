@@ -42,9 +42,9 @@ function ListingDetail() {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center gradient-bg">
-        <div className="glass-card px-8 py-6 rounded-2xl">
-          <div className="text-xl font-semibold text-gray-700">Loading...</div>
+      <div className="h-screen flex items-center justify-center bg-eggshell-50">
+        <div className="card-elevated px-8 py-6 rounded-2xl">
+          <div className="text-xl font-semibold text-charcoal-700">Loading...</div>
         </div>
       </div>
     )
@@ -52,9 +52,9 @@ function ListingDetail() {
 
   if (!listing) {
     return (
-      <div className="h-screen flex items-center justify-center gradient-bg">
-        <div className="glass-card px-8 py-6 rounded-2xl">
-          <div className="text-xl font-semibold text-gray-700">Listing not found</div>
+      <div className="h-screen flex items-center justify-center bg-eggshell-50">
+        <div className="card-elevated px-8 py-6 rounded-2xl">
+          <div className="text-xl font-semibold text-charcoal-700">Listing not found</div>
         </div>
       </div>
     )
@@ -71,12 +71,12 @@ function ListingDetail() {
   }
 
   return (
-    <div className="min-h-screen gradient-bg">
-      <div className="glass sticky top-0 z-10 border-b border-white/20">
+    <div className="min-h-screen bg-eggshell-50">
+      <div className="bg-eggshell-100 sticky top-0 z-10 border-b border-eggshell-400 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-5">
           <button
             onClick={() => navigate('/')}
-            className="flex items-center glass-card px-4 py-2 rounded-xl text-gray-700 hover:text-primary-600 font-medium transition-all duration-200 hover:scale-105 shadow-sm"
+            className="flex items-center card px-4 py-2 rounded-xl text-charcoal-700 hover:text-matcha-600 font-medium transition-all duration-200 hover:scale-105 shadow-sm hover:shadow-md"
           >
             <FiArrowLeft className="mr-2" />
             Back to Map
@@ -85,7 +85,7 @@ function ListingDetail() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="glass-card rounded-3xl shadow-2xl overflow-hidden mb-6 animate-fade-in border border-white/40">
+        <div className="card-elevated rounded-3xl shadow-lg overflow-hidden mb-6 animate-fade-in border border-eggshell-400">
           {listing.image_url && (
             <img
               src={listing.image_url}
@@ -94,25 +94,18 @@ function ListingDetail() {
             />
           )}
           <div className="p-8">
-            <h1 className="text-4xl font-extrabold mb-4" style={{ 
-              background: 'linear-gradient(135deg, #0284c7 0%, #c026d3 50%, #0284c7 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              color: '#0284c7',
-              display: 'inline-block'
-            }}>
+            <h1 className="text-4xl font-extrabold mb-4 text-charcoal-900">
               {listing.name || 'Unknown Listing'}
             </h1>
             <div className="flex items-center mb-6">
-              <div className="flex items-center glass px-4 py-2 rounded-full">
+              <div className="flex items-center card px-4 py-2 rounded-full border border-eggshell-400">
                 <div className="flex items-center">
                   {renderStars(Math.round(listing.average_rating || 0))}
                 </div>
-                <span className="ml-3 text-xl font-bold text-gray-800">
+                <span className="ml-3 text-xl font-bold text-charcoal-900">
                   {listing.average_rating ? listing.average_rating.toFixed(1) : 'N/A'}
                 </span>
-                <span className="ml-3 text-sm text-gray-600">
+                <span className="ml-3 text-sm text-charcoal-600">
                   ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
                 </span>
               </div>
@@ -120,49 +113,49 @@ function ListingDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               {listing.address && (
-                <div className="glass p-4 rounded-2xl">
-                  <h3 className="text-xs font-bold text-primary-600 uppercase mb-2 tracking-wide">Address</h3>
-                  <p className="text-gray-800 font-medium">{listing.address}</p>
+                <div className="card p-4 rounded-2xl">
+                  <h3 className="text-xs font-bold text-matcha-600 uppercase mb-2 tracking-wide">Address</h3>
+                  <p className="text-charcoal-800 font-medium">{listing.address}</p>
                 </div>
               )}
               {listing.price && (
-                <div className="glass p-4 rounded-2xl">
-                  <h3 className="text-xs font-bold text-primary-600 uppercase mb-2 tracking-wide">Price</h3>
-                  <p className="text-gray-800 font-medium">{listing.price}</p>
+                <div className="card p-4 rounded-2xl">
+                  <h3 className="text-xs font-bold text-matcha-600 uppercase mb-2 tracking-wide">Price</h3>
+                  <p className="text-charcoal-800 font-medium">{listing.price}</p>
                 </div>
               )}
               {listing.bedrooms && (
-                <div className="glass p-4 rounded-2xl">
-                  <h3 className="text-xs font-bold text-primary-600 uppercase mb-2 tracking-wide">Bedrooms</h3>
-                  <p className="text-gray-800 font-medium">{listing.bedrooms}</p>
+                <div className="card p-4 rounded-2xl">
+                  <h3 className="text-xs font-bold text-matcha-600 uppercase mb-2 tracking-wide">Bedrooms</h3>
+                  <p className="text-charcoal-800 font-medium">{listing.bedrooms}</p>
                 </div>
               )}
               {listing.bathrooms && (
-                <div className="glass p-4 rounded-2xl">
-                  <h3 className="text-xs font-bold text-primary-600 uppercase mb-2 tracking-wide">Bathrooms</h3>
-                  <p className="text-gray-800 font-medium">{listing.bathrooms}</p>
+                <div className="card p-4 rounded-2xl">
+                  <h3 className="text-xs font-bold text-matcha-600 uppercase mb-2 tracking-wide">Bathrooms</h3>
+                  <p className="text-charcoal-800 font-medium">{listing.bathrooms}</p>
                 </div>
               )}
             </div>
 
             {listing.description && (
-              <div className="glass p-5 rounded-2xl">
-                <h3 className="text-xs font-bold text-primary-600 uppercase mb-3 tracking-wide">Description</h3>
-                <p className="text-gray-700 leading-relaxed">{listing.description}</p>
+              <div className="card p-5 rounded-2xl">
+                <h3 className="text-xs font-bold text-matcha-600 uppercase mb-3 tracking-wide">Description</h3>
+                <p className="text-charcoal-700 leading-relaxed">{listing.description}</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="glass-card rounded-3xl shadow-2xl overflow-hidden border border-white/40 animate-fade-in">
-          <div className="border-b border-white/20">
+        <div className="card-elevated rounded-3xl shadow-lg overflow-hidden border border-eggshell-400 animate-fade-in">
+          <div className="border-b border-eggshell-400">
             <nav className="flex">
               <button
                 onClick={() => setActiveTab('reviews')}
                 className={`px-8 py-5 font-semibold text-sm transition-all duration-200 ${
                   activeTab === 'reviews'
-                    ? 'text-primary-600 border-b-2 border-primary-500 bg-white/30'
-                    : 'text-gray-600 hover:text-primary-500'
+                    ? 'text-matcha-600 border-b-2 border-matcha-500 bg-eggshell-200'
+                    : 'text-charcoal-600 hover:text-matcha-600'
                 }`}
               >
                 Reviews ({reviews.length})
@@ -171,8 +164,8 @@ function ListingDetail() {
                 onClick={() => setActiveTab('write-review')}
                 className={`px-8 py-5 font-semibold text-sm transition-all duration-200 ${
                   activeTab === 'write-review'
-                    ? 'text-primary-600 border-b-2 border-primary-500 bg-white/30'
-                    : 'text-gray-600 hover:text-primary-500'
+                    ? 'text-matcha-600 border-b-2 border-matcha-500 bg-eggshell-200'
+                    : 'text-charcoal-600 hover:text-matcha-600'
                 }`}
               >
                 Write a Review

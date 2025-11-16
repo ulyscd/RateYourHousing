@@ -81,24 +81,24 @@ function ReviewForm({ listingId, onSubmit }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-3">
+        <label className="block text-sm font-bold text-charcoal-800 mb-3">
           Your Name
         </label>
         <input
           type="text"
           value={userName}
           onChange={(e) => setUserName(e.target.value)}
-          className="w-full px-5 py-3 glass rounded-xl border border-white/30 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-200 placeholder:text-gray-400 text-gray-800 font-medium shadow-sm"
+          className="w-full px-5 py-3 bg-eggshell-50 rounded-xl border border-eggshell-400 focus:outline-none focus:ring-2 focus:ring-matcha-400 focus:border-matcha-400 transition-all duration-200 placeholder:text-charcoal-400 text-charcoal-900 font-medium shadow-sm"
           placeholder="Enter your name"
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-3">
+        <label className="block text-sm font-bold text-charcoal-800 mb-3">
           Rating *
         </label>
-        <div className="flex items-center space-x-2 glass p-4 rounded-xl">
+        <div className="flex items-center space-x-2 card p-4 rounded-xl border border-eggshell-400">
           {[1, 2, 3, 4, 5].map((value) => (
             <button
               key={value}
@@ -112,38 +112,38 @@ function ReviewForm({ listingId, onSubmit }) {
                 className={
                   value <= (hoveredRating || rating)
                     ? 'text-yellow-400 fill-current drop-shadow-lg'
-                    : 'text-gray-300'
+                    : 'text-eggshell-400'
                 }
                 size={36}
               />
             </button>
           ))}
-          <span className="ml-4 text-lg font-bold text-gray-800 glass-card px-4 py-2 rounded-lg">
+          <span className="ml-4 text-lg font-bold text-charcoal-900 card px-4 py-2 rounded-lg border border-eggshell-400">
             {hoveredRating || rating || 0} / 5
           </span>
         </div>
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-3">
+        <label className="block text-sm font-bold text-charcoal-800 mb-3">
           Your Review *
         </label>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={6}
-          className="w-full px-5 py-3 glass rounded-xl border border-white/30 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all duration-200 placeholder:text-gray-400 text-gray-800 font-medium shadow-sm resize-none"
+          className="w-full px-5 py-3 bg-eggshell-50 rounded-xl border border-eggshell-400 focus:outline-none focus:ring-2 focus:ring-matcha-400 focus:border-matcha-400 transition-all duration-200 placeholder:text-charcoal-400 text-charcoal-900 font-medium shadow-sm resize-none"
           placeholder="Share your experience..."
           required
         />
       </div>
 
       <div>
-        <label className="block text-sm font-bold text-gray-700 mb-3">
+        <label className="block text-sm font-bold text-charcoal-800 mb-3">
           Upload Images (Optional)
         </label>
         <div className="mt-1 flex items-center">
-          <label className="cursor-pointer inline-flex items-center px-6 py-3 glass-card rounded-xl text-gray-700 font-semibold hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg border border-white/40">
+          <label className="cursor-pointer inline-flex items-center px-6 py-3 card rounded-xl text-charcoal-700 font-semibold hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg border border-eggshell-400 hover:bg-eggshell-200">
             <FiUpload className="mr-2" size={18} />
             Choose Images
             <input
@@ -163,7 +163,7 @@ function ReviewForm({ listingId, onSubmit }) {
                 <img
                   src={img.preview}
                   alt={`Preview ${index + 1}`}
-                  className="w-full h-32 object-cover rounded-xl shadow-md group-hover:scale-105 transition-transform duration-200"
+                  className="w-full h-32 object-cover rounded-xl shadow-md group-hover:scale-105 transition-transform duration-200 border border-eggshell-400"
                 />
                 <button
                   type="button"
@@ -181,7 +181,7 @@ function ReviewForm({ listingId, onSubmit }) {
       <button
         type="submit"
         disabled={submitting}
-        className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl font-bold text-lg hover:from-green-600 hover:to-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl shadow-lg"
+        className="w-full bg-matcha-500 hover:bg-matcha-600 text-white py-4 rounded-xl font-bold text-lg focus:outline-none focus:ring-4 focus:ring-matcha-300 disabled:opacity-50 disabled:cursor-not-allowed transform transition-all duration-200 hover:scale-[1.02] hover:shadow-xl shadow-lg"
       >
         {submitting ? 'Submitting...' : 'Submit Review'}
       </button>

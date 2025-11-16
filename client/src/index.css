@@ -9,6 +9,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #fefdfb; /* Eggshell background */
 }
 
 .leaflet-container {
@@ -16,40 +17,24 @@ body {
   width: 100%;
 }
 
-/* Glassmorphism utility classes */
+/* Card utilities */
 @layer utilities {
-  .glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+  .card {
+    background: #fefdfb; /* Eggshell */
+    border: 1px solid #e5d4bc;
+    box-shadow: 0 2px 8px rgba(45, 45, 45, 0.08);
   }
   
-  .glass-dark {
-    background: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .card-elevated {
+    background: #fcfaf7;
+    border: 1px solid #e5d4bc;
+    box-shadow: 0 4px 12px rgba(45, 45, 45, 0.1);
   }
   
-  .glass-card {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
-  }
-  
-  .gradient-bg {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
-  }
-  
-  @keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+  .card-hover {
+    background: #f9f5f0;
+    border: 1px solid #ede0d0;
+    box-shadow: 0 6px 16px rgba(45, 45, 45, 0.12);
   }
 }
 

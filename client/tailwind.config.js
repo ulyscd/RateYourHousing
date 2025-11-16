@@ -7,29 +7,40 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+        // Matcha green for buttons and interactables
+        matcha: {
+          50: '#f0f7f2',
+          100: '#ddeee2',
+          200: '#bddcc6',
+          300: '#8fc2a5',
+          400: '#5fa07d',
+          500: '#3d8262', // Main matcha
+          600: '#2f6b52',
+          700: '#285645',
+          800: '#244638',
+          900: '#1f3b30',
         },
-        accent: {
-          50: '#fdf4ff',
-          100: '#fae8ff',
-          200: '#f5d0fe',
-          300: '#f0abfc',
-          400: '#e879f9',
-          500: '#d946ef',
-          600: '#c026d3',
-          700: '#a21caf',
-          800: '#86198f',
-          900: '#701a75',
+        // Off-black and dark grays for text
+        charcoal: {
+          50: '#f6f6f6',
+          100: '#e7e7e7',
+          200: '#d1d1d1',
+          300: '#b0b0b0',
+          400: '#888888',
+          500: '#6d6d6d',
+          600: '#5d5d5d',
+          700: '#4f4f4f',
+          800: '#454545',
+          900: '#3d3d3d', // Off-black
+        },
+        // Eggshell/off-white backgrounds
+        eggshell: {
+          50: '#fefdfb', // Purest eggshell
+          100: '#fcfaf7',
+          200: '#f9f5f0',
+          300: '#f4ede2',
+          400: '#ede0d0',
+          500: '#e5d4bc',
         },
       },
       backdropBlur: {
@@ -38,7 +49,6 @@ export default {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.3s ease-out',
-        'bounce-subtle': 'bounceSubtle 2s infinite',
       },
       keyframes: {
         fadeIn: {
@@ -48,10 +58,6 @@ export default {
         slideUp: {
           '0%': { transform: 'translateY(10px)', opacity: '0' },
           '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        bounceSubtle: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' },
         },
       },
     },
